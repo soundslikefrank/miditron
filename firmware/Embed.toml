@@ -1,0 +1,22 @@
+[default.reset]
+# Whether or not the target should be reset.
+# When flashing is enabled as well, the target will be reset after flashing.
+enabled = true
+# Whether or not the target should be halted after reset.
+halt_afterwards = true
+
+[default.general]
+# The chip name of the chip to be debugged.
+chip = "STM32L452RETx"
+
+[default.rtt]
+# Whether or not an RTTUI should be opened after flashing.
+# This is exclusive and cannot be used with GDB at the moment.
+enabled = false
+
+[default.gdb]
+# Whether or not a GDB server should be opened after flashing.
+# This is exclusive and cannot be used with RTT at the moment.
+enabled = true
+# The connection string in host:port format wher the GDB server will open a socket.
+gdb_connection_string = "127.0.0.1:1337"
