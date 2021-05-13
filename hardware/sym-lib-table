@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name PJ398SM-12)(type Legacy)(uri ${KIPRJMOD}/models/PJ398SM-12.pretty/PJ398SM-12.lib)(options "")(descr ""))
+  (lib (name SD-50BV)(type Legacy)(uri ${KIPRJMOD}/models/SD-50BV.pretty/SD-50BV.lib)(options "")(descr ""))
+  (lib (name TL1265RGQTCLR)(type Legacy)(uri ${KIPRJMOD}/models/TL1265RGQTCLR.pretty/TL1265RGQTCLR.lib)(options "")(descr ""))
+)
