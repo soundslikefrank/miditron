@@ -6,9 +6,7 @@
 extern crate cortex_m;
 #[macro_use(entry, exception)]
 extern crate cortex_m_rt as rt;
-// #[macro_use(block)]
 extern crate cortex_m_semihosting as sh;
-extern crate nb;
 extern crate panic_semihosting;
 
 extern crate stm32l4xx_hal as hal;
