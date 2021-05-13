@@ -11,7 +11,8 @@ extern crate panic_semihosting;
 
 extern crate stm32l4xx_hal as hal;
 
-use core::cell::{Cell, RefCell};
+use core::cell::RefCell;
+use heapless::spsc::Queue;
 
 use crate::hal::pac;
 use crate::hal::prelude::*;
@@ -28,11 +29,7 @@ use cortex_m::{
 use crate::sh::hio;
 use core::fmt::Write;
 
-const BUF_SIZE: usize = 10;
-
-// Set up an output pin in a globally-accessible mutex.
-static READ_BUF: Mutex<RefCell<[u8; BUF_SIZE]>> = Mutex::new(RefCell::new([0; BUF_SIZE]));
-static READ_I: Mutex<Cell<usize>> = Mutex::new(Cell::new(0));
+static QUEUE: Mutex<RefCell<Queue<u8, 12>>> = Mutex::new(RefCell::new(Queue::new()));
 
 #[entry]
 fn main() -> ! {
@@ -73,15 +70,21 @@ fn main() -> ! {
 
     let mut timer = Delay::new(cp.SYST, clocks);
 
+    // let (mut producer, mut consumer) = queue.split();
+
     loop {
         timer.delay_ms(1000_u32);
-        let size = free(|cs| {
-            let i = READ_I.borrow(cs);
-            i.get()
+        let last = free(|cs| {
+            let mut queue = QUEUE.borrow(cs).borrow_mut();
+            if let Some(value) = queue.dequeue() {
+                value
+            } else {
+                0
+            }
         });
         if let Ok(mut hstdout) = hio::hstdout() {
             // Q: We don't really care if that's not working, is `ok()` fine here?
-            writeln!(hstdout, "{}", size).ok();
+            writeln!(hstdout, "{}", last).ok();
         }
     }
 }
@@ -92,16 +95,11 @@ fn USART1() {
     unsafe { (*pac::USART1::ptr()).rqr.write(|w| w.rxfrq().set_bit()) }
 
     free(|cs| {
-        let i = READ_I.borrow(cs);
-        let i_val = i.get();
-        if i_val == BUF_SIZE {
-            return;
-        }
-
-        let mut buf = READ_BUF.borrow(cs).borrow_mut();
-
-        buf[i_val] = unsafe { (*pac::USART1::ptr()).rdr.read().bits() } as u8;
-        i.set(i_val + 1);
+        let mut queue = QUEUE.borrow(cs).borrow_mut();
+        // Fire and forget?
+        queue
+            .enqueue(unsafe { (*pac::USART1::ptr()).rdr.read().bits() } as u8)
+            .ok();
     });
 }
 
