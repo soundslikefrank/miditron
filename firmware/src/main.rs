@@ -12,22 +12,26 @@ extern crate panic_semihosting;
 extern crate stm32l4xx_hal as hal;
 
 use core::cell::RefCell;
+use hal::time::MegaHertz;
 use heapless::spsc::Queue;
 
-use crate::hal::pac;
-use crate::hal::prelude::*;
-use crate::hal::serial::{Config, Event, Serial};
-use crate::hal::stm32::interrupt;
-
-use crate::hal::delay::Delay;
-use crate::rt::ExceptionFrame;
-use cortex_m::{
-    interrupt::{free, Mutex},
-    peripheral::NVIC,
+use hal::{
+    pac,
+    prelude::*,
+    serial::{Config, Event, Serial},
+    stm32::interrupt,
 };
 
-use crate::sh::hio;
+use rt::ExceptionFrame;
+use cortex_m::{
+    interrupt::{free, Mutex},
+    peripheral::{syst::SystClkSource, NVIC},
+};
+
+use sh::hio;
 use core::fmt::Write;
+
+const F_CPU: MegaHertz = MegaHertz(80);
 
 static QUEUE: Mutex<RefCell<Queue<u8, 12>>> = Mutex::new(RefCell::new(Queue::new()));
 
@@ -42,12 +46,21 @@ fn main() -> ! {
 
     let mut gpioa = dp.GPIOA.split(&mut rcc.ahb2);
 
+    let mut syst = cp.SYST;
+
     let clocks = rcc
         .cfgr
-        .sysclk(80.mhz())
-        .pclk1(80.mhz())
-        .pclk2(80.mhz())
+        .sysclk(F_CPU)
+        .pclk1(F_CPU)
+        .pclk2(F_CPU)
         .freeze(&mut flash.acr, &mut pwr);
+
+    syst.set_clock_source(SystClkSource::Core);
+    // SysTick frequency
+    syst.set_reload(clocks.sysclk().0 / 10);
+    syst.clear_current();
+    syst.enable_counter();
+    syst.enable_interrupt();
 
     let tx = gpioa.pa9.into_af7(&mut gpioa.moder, &mut gpioa.afrh);
 
@@ -68,29 +81,27 @@ fn main() -> ! {
         NVIC::unmask(interrupt::USART1);
     }
 
-    let mut timer = Delay::new(cp.SYST, clocks);
+    loop {}
+}
 
-    // let (mut producer, mut consumer) = queue.split();
-
-    loop {
-        timer.delay_ms(1000_u32);
-        let last = free(|cs| {
-            let mut queue = QUEUE.borrow(cs).borrow_mut();
-            if let Some(value) = queue.dequeue() {
-                value
-            } else {
-                0
-            }
-        });
-        if let Ok(mut hstdout) = hio::hstdout() {
-            // Q: We don't really care if that's not working, is `ok()` fine here?
-            writeln!(hstdout, "{}", last).ok();
+#[exception]
+fn SysTick() {
+    let last = free(|cs| {
+        let mut queue = QUEUE.borrow(cs).borrow_mut();
+        if let Some(value) = queue.dequeue() {
+            value
+        } else {
+            0
         }
+    });
+    if let Ok(mut hstdout) = hio::hstdout() {
+        // Q: We don't really care if that's not working, is `ok()` fine here?
+        writeln!(hstdout, "{}", last).ok();
     }
 }
 
 #[interrupt]
-/// Async USART read interrupt handler
+// Async USART read interrupt handler
 fn USART1() {
     unsafe { (*pac::USART1::ptr()).rqr.write(|w| w.rxfrq().set_bit()) }
 
