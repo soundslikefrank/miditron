@@ -2,8 +2,8 @@
 //!
 #![no_main]
 #![no_std]
+#![deny(unsafe_code)]
 
-extern crate cortex_m;
 #[macro_use(entry, exception)]
 extern crate cortex_m_rt as rt;
 extern crate cortex_m_semihosting as sh;
@@ -11,29 +11,23 @@ extern crate panic_semihosting;
 
 extern crate stm32l4xx_hal as hal;
 
-use core::cell::RefCell;
-use hal::time::MegaHertz;
-use heapless::spsc::Queue;
+use hal::time::{Hertz, KiloHertz, MegaHertz};
 
-use hal::{
-    pac,
-    prelude::*,
-    serial::{Config, Event, Serial},
-    stm32::interrupt,
-};
+use hal::prelude::*;
 
+use cortex_m::peripheral::syst::SystClkSource;
 use rt::ExceptionFrame;
-use cortex_m::{
-    interrupt::{free, Mutex},
-    peripheral::{syst::SystClkSource, NVIC},
-};
 
-use sh::hio;
-use core::fmt::Write;
+/* use core::fmt::Write;
+use sh::hio; */
+
+mod drivers;
+mod interrupts;
+
+use drivers::midi_input::MidiInput;
 
 const F_CPU: MegaHertz = MegaHertz(80);
-
-static QUEUE: Mutex<RefCell<Queue<u8, 12>>> = Mutex::new(RefCell::new(Queue::new()));
+const F_SYST: KiloHertz = KiloHertz(8);
 
 #[entry]
 fn main() -> ! {
@@ -48,6 +42,9 @@ fn main() -> ! {
 
     let mut syst = cp.SYST;
 
+    let Hertz(f_cpu) = F_CPU.into();
+    let Hertz(f_syst) = F_SYST.into();
+
     let clocks = rcc
         .cfgr
         .sysclk(F_CPU)
@@ -56,64 +53,38 @@ fn main() -> ! {
         .freeze(&mut flash.acr, &mut pwr);
 
     syst.set_clock_source(SystClkSource::Core);
-    // SysTick frequency
-    syst.set_reload(clocks.sysclk().0 / 10);
+    syst.set_reload(f_cpu / f_syst);
     syst.clear_current();
     syst.enable_counter();
     syst.enable_interrupt();
 
-    let tx = gpioa.pa9.into_af7(&mut gpioa.moder, &mut gpioa.afrh);
-
-    let rx = gpioa.pa10.into_af7(&mut gpioa.moder, &mut gpioa.afrh);
-
-    let mut serial = Serial::usart1(
+    MidiInput::init(
         dp.USART1,
-        (tx, rx),
-        Config::default().baudrate(31_250.bps()),
+        (gpioa.pa9, gpioa.pa10),
         clocks,
         &mut rcc.apb2,
+        &mut gpioa.moder,
+        &mut gpioa.afrh,
     );
-
-    // Set the rxneie interrupt bit
-    serial.listen(Event::Rxne);
-
-    unsafe {
-        NVIC::unmask(interrupt::USART1);
-    }
 
     loop {}
 }
 
+#[allow(non_snake_case)]
 #[exception]
 fn SysTick() {
-    let last = free(|cs| {
-        let mut queue = QUEUE.borrow(cs).borrow_mut();
-        if let Some(value) = queue.dequeue() {
-            value
-        } else {
-            0
+    MidiInput::stream(|q| {
+        if q.is_full() {
+            // This should really not happen, let's panic
+            panic!("Queue is full");
         }
-    });
-    if let Ok(mut hstdout) = hio::hstdout() {
-        // Q: We don't really care if that's not working, is `ok()` fine here?
-        writeln!(hstdout, "{}", last).ok();
-    }
-}
-
-#[interrupt]
-// Async USART read interrupt handler
-fn USART1() {
-    unsafe { (*pac::USART1::ptr()).rqr.write(|w| w.rxfrq().set_bit()) }
-
-    free(|cs| {
-        let mut queue = QUEUE.borrow(cs).borrow_mut();
-        // Fire and forget?
-        queue
-            .enqueue(unsafe { (*pac::USART1::ptr()).rdr.read().bits() } as u8)
-            .ok();
+        /* while let Some(value) = q.dequeue() {
+            // parser.push(value);
+        } */
     });
 }
 
+#[allow(non_snake_case)]
 #[exception]
 fn HardFault(ef: &ExceptionFrame) -> ! {
     panic!("{:#?}", ef);
