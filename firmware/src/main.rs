@@ -11,26 +11,32 @@ extern crate panic_semihosting;
 
 extern crate stm32l4xx_hal as hal;
 
-use hal::time::{Hertz, KiloHertz, MegaHertz};
-
-use hal::prelude::*;
-
 use cortex_m::peripheral::syst::SystClkSource;
+use hal::prelude::*;
+use hal::time::{Hertz, KiloHertz, MegaHertz};
 use rt::ExceptionFrame;
 
-/* use core::fmt::Write;
-use sh::hio; */
+use core::fmt::Write;
+use sh::hio;
 
 mod drivers;
 mod interrupts;
+mod midi;
 
 use drivers::midi_input::MidiInput;
+use midi::MidiStream;
 
 const F_CPU: MegaHertz = MegaHertz(80);
-const F_SYST: KiloHertz = KiloHertz(8);
+const F_SYSTICK: KiloHertz = KiloHertz(8);
 
 #[entry]
 fn main() -> ! {
+    // -- Begin magic macro block --
+    // Leave this at the beginning of main (#[entry]-macro)
+    // static mut variables local to the entry point are safe to modify.
+    static mut MESSAGE_BUFFER: [u8; 1024] = [0; 1024];
+    // -- End magic macro block --
+
     let cp = cortex_m::Peripherals::take().unwrap();
     let dp = hal::stm32::Peripherals::take().unwrap();
 
@@ -43,7 +49,7 @@ fn main() -> ! {
     let mut syst = cp.SYST;
 
     let Hertz(f_cpu) = F_CPU.into();
-    let Hertz(f_syst) = F_SYST.into();
+    let Hertz(f_syst) = F_SYSTICK.into();
 
     let clocks = rcc
         .cfgr
@@ -67,20 +73,19 @@ fn main() -> ! {
         &mut gpioa.afrh,
     );
 
+    MidiStream::init(MESSAGE_BUFFER);
+
     loop {}
 }
 
 #[allow(non_snake_case)]
 #[exception]
 fn SysTick() {
-    MidiInput::stream(|q| {
-        if q.is_full() {
-            // This should really not happen, let's panic
-            panic!("Queue is full");
+    MidiStream::on_message(|m| {
+        // voice_manager.process(m);
+        if let Ok(mut hstdout) = hio::hstdout() {
+            writeln!(hstdout, "{:?}", m).ok();
         }
-        /* while let Some(value) = q.dequeue() {
-            // parser.push(value);
-        } */
     });
 }
 

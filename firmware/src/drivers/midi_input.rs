@@ -1,8 +1,4 @@
-use core::cell::{RefCell, RefMut};
-use cortex_m::{
-    interrupt::{free, Mutex},
-    peripheral::NVIC,
-};
+use cortex_m::peripheral::NVIC;
 use hal::{
     device::USART1,
     gpio::{
@@ -14,9 +10,7 @@ use hal::{
     serial::{Config, Event, Serial},
     stm32::interrupt,
 };
-use heapless::spsc::Queue;
 
-pub static MIDI_STREAM: Mutex<RefCell<Queue<u8, 128>>> = Mutex::new(RefCell::new(Queue::new()));
 pub struct MidiInput;
 
 impl MidiInput {
@@ -42,18 +36,9 @@ impl MidiInput {
         // Set the rxneie interrupt bit
         serial.listen(Event::Rxne);
 
+        // Enable interrupt
         unsafe {
             NVIC::unmask(interrupt::USART1);
         }
-    }
-
-    pub fn stream<F>(f: F) -> ()
-    where
-        F: FnOnce(&mut RefMut<Queue<u8, 128>>) -> (),
-    {
-        free(|cs| {
-            let mut queue = MIDI_STREAM.borrow(cs).borrow_mut();
-            f(&mut queue);
-        })
     }
 }

@@ -5,7 +5,7 @@ use hal::{pac, stm32::interrupt};
 
 use cortex_m::interrupt::free;
 
-use crate::drivers::midi_input::MIDI_STREAM;
+use crate::midi::MIDI_STREAM;
 
 #[interrupt]
 fn USART1() {

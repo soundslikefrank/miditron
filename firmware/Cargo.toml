@@ -19,6 +19,12 @@ heapless = "0.7.0"
 features = ["stm32l4x2", "rt"]
 version = "0.6.0"
 
+[dependencies.wmidi]
+git = "https://github.com/chmanie/wmidi.git"
+rev = "ff1f1d7"
+default-features = false
+# version = "4.0.6"
+
 # this lets you use `cargo fix`!
 [[bin]]
 name = "miditron"

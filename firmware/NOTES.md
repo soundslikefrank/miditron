@@ -37,3 +37,17 @@ fn USART1() {
         i.set(i.get() + 1);
     });
 ```
+
+```rust
+// Syntax helper for getting global variables of the form `Mutex<RefCell<Option>>>` from an interrupt-free
+/// context - eg in interrupt handlers.
+///
+/// Example: `access_global!(DELAY, delay, cs)`
+#[macro_export]
+macro_rules! access_global {
+    ($NAME_GLOBAL:ident, $name_local:ident, $cs:expr) => {
+        let mut part1 = $NAME_GLOBAL.borrow($cs).borrow_mut();
+        let $name_local = part1.as_mut().unwrap();
+    };
+}
+```
