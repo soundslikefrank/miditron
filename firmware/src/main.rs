@@ -34,7 +34,7 @@ fn main() -> ! {
     // -- Begin magic macro block --
     // Leave this at the beginning of main (#[entry]-macro)
     // static mut variables local to the entry point are safe to modify.
-    static mut MESSAGE_BUFFER: [u8; 1024] = [0; 1024];
+    static mut MIDI_MESSAGE_BUFFER: [u8; 1024] = [0; 1024];
     // -- End magic macro block --
 
     let cp = cortex_m::Peripherals::take().unwrap();
@@ -73,7 +73,7 @@ fn main() -> ! {
         &mut gpioa.afrh,
     );
 
-    MidiStream::init(MESSAGE_BUFFER);
+    MidiStream::init(MIDI_MESSAGE_BUFFER);
 
     loop {}
 }
