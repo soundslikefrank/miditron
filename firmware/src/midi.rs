@@ -3,13 +3,15 @@ use cortex_m::interrupt::{free, Mutex};
 use heapless::spsc::Queue;
 pub use wmidi::{MidiMessage, StreamParser};
 
-pub static MIDI_PARSER: Mutex<RefCell<Option<StreamParser<1024>>>> = Mutex::new(RefCell::new(None));
+pub const MIDI_BUF_LEN: usize = 512;
+
+pub static MIDI_PARSER: Mutex<RefCell<Option<StreamParser<MIDI_BUF_LEN>>>> = Mutex::new(RefCell::new(None));
 pub static MIDI_STREAM: Mutex<RefCell<Queue<u8, 128>>> = Mutex::new(RefCell::new(Queue::new()));
 
 pub struct MidiStream;
 
 impl MidiStream {
-    pub fn init(message_buffer: &'static mut [u8; 1024]) {
+    pub fn init(message_buffer: &'static mut [u8; MIDI_BUF_LEN]) {
         free(move |cs| {
             let mut parser = MIDI_PARSER.borrow(cs).borrow_mut();
             *parser = Some(StreamParser::new(message_buffer));

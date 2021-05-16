@@ -24,7 +24,7 @@ mod interrupts;
 mod midi;
 
 use drivers::midi_input::MidiInput;
-use midi::MidiStream;
+use midi::{MidiStream,MIDI_BUF_LEN};
 
 const F_CPU: MegaHertz = MegaHertz(80);
 const F_SYSTICK: KiloHertz = KiloHertz(8);
@@ -34,7 +34,7 @@ fn main() -> ! {
     // -- Begin magic macro block --
     // Leave this at the beginning of main (#[entry]-macro)
     // static mut variables local to the entry point are safe to modify.
-    static mut MIDI_MESSAGE_BUFFER: [u8; 1024] = [0; 1024];
+    static mut MIDI_MESSAGE_BUFFER: [u8; MIDI_BUF_LEN] = [0; MIDI_BUF_LEN];
     // -- End magic macro block --
 
     let cp = cortex_m::Peripherals::take().unwrap();
