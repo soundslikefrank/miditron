@@ -4,6 +4,16 @@
   compared to the CV output. This ensures that the CV output will have been refreshed to the right value when the trigger/gate is sent.
 
 
+## Debugging output
+```rust
+use core::fmt::Write;
+use sh::hio;
+
+if let Ok(mut hstdout) = hio::hstdout() {
+    writeln!(hstdout, "{:?}", m).ok();
+}
+```
+
 ```rust
 /// Receive data into a u8 buffer. See L44 RM, section 38.5.3: "Character reception procedure"
 pub fn read(&mut self, buf: &mut [u8]) {
@@ -51,3 +61,7 @@ macro_rules! access_global {
     };
 }
 ```
+
+## Trigger DMA transfer from timer
+
+https://community.st.com/s/question/0D50X0000C4MPwQ/trigger-spi-dma-transfer-from-timer-directly
