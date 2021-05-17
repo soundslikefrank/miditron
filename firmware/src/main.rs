@@ -29,7 +29,7 @@ mod midi;
 mod voices;
 
 use drivers::midi_input::MidiInput;
-use midi::{MidiStream, MIDI_BUF_LEN};
+use midi::MidiStream;
 use voices::Voices;
 
 const F_CPU: MegaHertz = MegaHertz(80);
@@ -46,7 +46,7 @@ fn main() -> ! {
     // -- Begin magic macro block --
     // Leave this at the beginning of main (#[entry]-macro)
     // static mut variables local to the entry point are safe to modify.
-    static mut MIDI_MESSAGE_BUFFER: [u8; MIDI_BUF_LEN] = [0; MIDI_BUF_LEN];
+    // static mut MIDI_MESSAGE_BUFFER: [u8; MIDI_BUF_LEN] = [0; MIDI_BUF_LEN];
     // -- End magic macro block --
 
     let cp = cortex_m::Peripherals::take().unwrap();
@@ -85,7 +85,7 @@ fn main() -> ! {
         &mut gpioa.afrh,
     );
 
-    MidiStream::init(MIDI_MESSAGE_BUFFER);
+    MidiStream::init();
 
     let sck = gpioa.pa5.into_af5(&mut gpioa.moder, &mut gpioa.afrl);
     let miso = gpioa.pa6.into_af5(&mut gpioa.moder, &mut gpioa.afrl);

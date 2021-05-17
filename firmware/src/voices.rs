@@ -1,12 +1,12 @@
 use cortex_m::interrupt::CriticalSection;
-use wmidi::MidiMessage;
+use embedded_midi::MidiMessage;
 
 pub struct Voices;
 
 impl Voices {
-    pub fn process(cs: &CriticalSection, msg: MidiMessage) {
+    pub fn process(_cs: &CriticalSection, msg: MidiMessage) {
         match msg {
-            MidiMessage::NoteOn(ch, no, vel) => {},
+            MidiMessage::NoteOn(_ch, _no, _vel) => {},
             _ => {},
         }
     }
