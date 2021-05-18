@@ -17,6 +17,7 @@ use dac8564::Dac;
 use dummy_pin::DummyPin;
 use embedded_hal::spi::{Mode, Phase, Polarity};
 use hal::{
+    i2c::I2c,
     prelude::*,
     spi::Spi,
     time::{Hertz, KiloHertz, MegaHertz},
@@ -57,6 +58,7 @@ fn main() -> ! {
     let mut pwr = dp.PWR.constrain(&mut rcc.apb1r1);
 
     let mut gpioa = dp.GPIOA.split(&mut rcc.ahb2);
+    let mut gpiob = dp.GPIOB.split(&mut rcc.ahb2);
 
     let mut syst = cp.SYST;
 
@@ -109,12 +111,31 @@ fn main() -> ! {
     let mut dac = Dac::new(nss, ldac, enable);
     dac.enable();
 
+    let mut scl = gpiob
+        .pb10
+        .into_open_drain_output(&mut gpiob.moder, &mut gpiob.otyper);
+    scl.internal_pull_up(&mut gpiob.pupdr, true);
+    let scl = scl.into_af4(&mut gpiob.moder, &mut gpiob.afrh);
+
+    let mut sda = gpiob
+        .pb11
+        .into_open_drain_output(&mut gpiob.moder, &mut gpiob.otyper);
+    sda.internal_pull_up(&mut gpiob.pupdr, true);
+    let sda = sda.into_af4(&mut gpiob.moder, &mut gpiob.afrh);
+
+    let mut i2c = I2c::i2c2(dp.I2C2, (scl, sda), 100.khz(), clocks, &mut rcc.apb1r1);
+
     let mut timer = Delay::new(syst, clocks);
+
+    let command: [u8;3] = [0, 0x80, 0];
     loop {
         timer.delay_ms(1000_u32);
         dac.prepare_transfer(dac8564::Channel::A, 65535, |c| {
             spi.write(&c).ok();
         });
+        if let Ok(_res) = i2c.write(0b01001000, &command) {
+            // idk do stuff?
+        }
     }
 }
 
