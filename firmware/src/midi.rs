@@ -1,10 +1,9 @@
-use core::{cell::RefCell, convert::TryFrom};
+use core::cell::RefCell;
 use cortex_m::interrupt::{free, CriticalSection, Mutex};
-use heapless::spsc::Queue;
 use embedded_midi::{MidiMessage, MidiParser};
+use heapless::spsc::Queue;
 
-pub static MIDI_PARSER: Mutex<RefCell<Option<MidiParser>>> =
-    Mutex::new(RefCell::new(None));
+pub static MIDI_PARSER: Mutex<RefCell<Option<MidiParser>>> = Mutex::new(RefCell::new(None));
 pub static MIDI_STREAM: Mutex<RefCell<Queue<u8, 128>>> = Mutex::new(RefCell::new(Queue::new()));
 
 pub struct MidiStream;
@@ -31,10 +30,7 @@ impl MidiStream {
         }
         if let Some(parser) = MIDI_PARSER.borrow(cs).borrow_mut().as_mut() {
             while let Some(byte) = queue.dequeue() {
-                if let Some(msg) = parser
-                    .parse_byte(byte)
-                    .and_then(|b| MidiMessage::try_from(b).ok())
-                {
+                if let Some(msg) = parser.parse_byte(byte) {
                     f(msg)
                 }
             }
