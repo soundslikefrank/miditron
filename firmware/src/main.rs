@@ -13,7 +13,8 @@ extern crate stm32l4xx_hal as hal;
 
 use crate::hal::delay::Delay;
 use cortex_m::{interrupt::free, peripheral::syst::SystClkSource};
-use dac8564::Dac;
+use dac5578::DAC5578;
+use dac8564::DAC8564;
 use dummy_pin::DummyPin;
 use embedded_hal::spi::{Mode, Phase, Polarity};
 use hal::{
@@ -99,7 +100,7 @@ fn main() -> ! {
     let enable = DummyPin::new_low();
     let ldac = DummyPin::new_low();
 
-    let mut spi = Spi::spi1(
+    let spi = Spi::spi1(
         dp.SPI1,
         (sck, miso, mosi),
         MODE,
@@ -108,8 +109,8 @@ fn main() -> ! {
         &mut rcc.apb2,
     );
 
-    let mut dac = Dac::new(nss, ldac, enable);
-    dac.enable();
+    let mut dac4 = DAC8564::new(spi, nss, ldac, enable);
+    dac4.enable();
 
     let mut scl = gpiob
         .pb10
@@ -123,18 +124,19 @@ fn main() -> ! {
     sda.internal_pull_up(&mut gpiob.pupdr, true);
     let sda = sda.into_af4(&mut gpiob.moder, &mut gpiob.afrh);
 
-    let mut i2c = I2c::i2c2(dp.I2C2, (scl, sda), 100.khz(), clocks, &mut rcc.apb1r1);
+    let i2c = I2c::i2c2(dp.I2C2, (scl, sda), 100.khz(), clocks, &mut rcc.apb1r1);
+
+    let mut dac8 = DAC5578::new(i2c, dac5578::Address::PinLow);
 
     let mut timer = Delay::new(syst, clocks);
 
-    let command: [u8;3] = [0, 0x80, 0];
     loop {
         timer.delay_ms(1000_u32);
-        dac.prepare_transfer(dac8564::Channel::A, 65535, |c| {
-            spi.write(&c).ok();
-        });
-        if let Ok(_res) = i2c.write(0b01001000, &command) {
-            // idk do stuff?
+        if let Ok(_) = dac4.write_blocking(dac8564::Channel::A, 32000) {
+            // what now?
+        }
+        if let Ok(_) = dac8.write_channel(dac5578::Channel::A, 128) {
+            // party?
         }
     }
 }
