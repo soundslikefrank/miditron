@@ -65,3 +65,6 @@ macro_rules! access_global {
 ## Trigger DMA transfer from timer
 
 https://community.st.com/s/question/0D50X0000C4MPwQ/trigger-spi-dma-transfer-from-timer-directly
+
+## DAC Layoutes notes
+As a result of the single ground pin of the DACx578, all return currents(including digital and analog return currents for the DAC) must flow through a single point. Ideally, GND would be connected directly to an analog ground plane. This plane would be separate from the ground connection for the digital components until they were connected at the power-entry point of the system.
