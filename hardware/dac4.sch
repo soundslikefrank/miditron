@@ -1,0 +1,246 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 2 3
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L power:GND #PWR?
+U 1 1 60A46579
+P 6750 3000
+F 0 "#PWR?" H 6750 2750 50  0001 C CNN
+F 1 "GND" H 6755 2827 50  0000 C CNN
+F 2 "" H 6750 3000 50  0001 C CNN
+F 3 "" H 6750 3000 50  0001 C CNN
+	1    6750 3000
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60A46C2F
+P 5750 1250
+F 0 "#PWR?" H 5750 1100 50  0001 C CNN
+F 1 "+3.3VA" H 5765 1423 50  0000 C CNN
+F 2 "" H 5750 1250 50  0001 C CNN
+F 3 "" H 5750 1250 50  0001 C CNN
+	1    5750 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 60A4736E
+P 4950 1250
+F 0 "#PWR?" H 4950 1100 50  0001 C CNN
+F 1 "+3.3V" H 4965 1423 50  0000 C CNN
+F 2 "" H 4950 1250 50  0001 C CNN
+F 3 "" H 4950 1250 50  0001 C CNN
+	1    4950 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60A48509
+P 5750 1750
+F 0 "#PWR?" H 5750 1500 50  0001 C CNN
+F 1 "GND" H 5755 1577 50  0000 C CNN
+F 2 "" H 5750 1750 50  0001 C CNN
+F 3 "" H 5750 1750 50  0001 C CNN
+	1    5750 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 60A49BA4
+P 5950 1500
+F 0 "C?" H 6065 1546 50  0000 L CNN
+F 1 "3.3u" H 6065 1455 50  0000 L CNN
+F 2 "" H 5988 1350 50  0001 C CNN
+F 3 "~" H 5950 1500 50  0001 C CNN
+	1    5950 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 60A47B47
+P 5550 1500
+F 0 "C?" H 5435 1454 50  0000 R CNN
+F 1 "100n" H 5435 1545 50  0000 R CNN
+F 2 "" H 5588 1350 50  0001 C CNN
+F 3 "~" H 5550 1500 50  0001 C CNN
+	1    5550 1500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	5750 1250 5550 1250
+Wire Wire Line
+	5550 1250 5550 1350
+Wire Wire Line
+	5750 1250 5950 1250
+Wire Wire Line
+	5950 1250 5950 1350
+Connection ~ 5750 1250
+Wire Wire Line
+	5750 1750 5950 1750
+Wire Wire Line
+	5950 1750 5950 1650
+Wire Wire Line
+	5750 1750 5550 1750
+Wire Wire Line
+	5550 1750 5550 1650
+Connection ~ 5750 1750
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60A4E5A0
+P 4250 3500
+F 0 "#PWR?" H 4250 3350 50  0001 C CNN
+F 1 "+3.3VA" V 4265 3627 50  0000 L CNN
+F 2 "" H 4250 3500 50  0001 C CNN
+F 3 "" H 4250 3500 50  0001 C CNN
+	1    4250 3500
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4250 3500 4750 3500
+$Comp
+L power:GND #PWR?
+U 1 1 60A48919
+P 4450 3600
+F 0 "#PWR?" H 4450 3350 50  0001 C CNN
+F 1 "GND" V 4455 3472 50  0000 R CNN
+F 2 "" H 4450 3600 50  0001 C CNN
+F 3 "" H 4450 3600 50  0001 C CNN
+	1    4450 3600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4450 3600 4600 3600
+Wire Wire Line
+	4750 3700 4600 3700
+Wire Wire Line
+	4600 3700 4600 3600
+Connection ~ 4600 3600
+Wire Wire Line
+	4600 3600 4750 3600
+Text GLabel 4750 3400 0    50   Input ~ 0
+v_ref_dac
+Text GLabel 6500 1250 1    50   Input ~ 0
+v_ref_dac
+$Comp
+L power:GND #PWR?
+U 1 1 60A528A6
+P 6500 1750
+F 0 "#PWR?" H 6500 1500 50  0001 C CNN
+F 1 "GND" H 6505 1577 50  0000 C CNN
+F 2 "" H 6500 1750 50  0001 C CNN
+F 3 "" H 6500 1750 50  0001 C CNN
+	1    6500 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 60A52DC8
+P 6500 1500
+F 0 "C?" H 6385 1454 50  0000 R CNN
+F 1 "220n" H 6385 1545 50  0000 R CNN
+F 2 "" H 6538 1350 50  0001 C CNN
+F 3 "~" H 6500 1500 50  0001 C CNN
+	1    6500 1500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6500 1350 6500 1250
+Wire Wire Line
+	6500 1650 6500 1750
+Wire Wire Line
+	6550 3500 6750 3500
+Wire Wire Line
+	6750 3500 6750 3400
+Wire Wire Line
+	6550 3400 6750 3400
+Connection ~ 6750 3400
+Wire Wire Line
+	6750 3400 6750 3300
+Wire Wire Line
+	6550 3300 6750 3300
+Connection ~ 6750 3300
+Wire Wire Line
+	6750 3300 6750 3200
+Wire Wire Line
+	6550 3200 6750 3200
+Connection ~ 6750 3200
+Wire Wire Line
+	6750 3200 6750 3000
+$Comp
+L power:+3.3V #PWR?
+U 1 1 60A5711A
+P 6950 3600
+F 0 "#PWR?" H 6950 3450 50  0001 C CNN
+F 1 "+3.3V" V 6965 3728 50  0000 L CNN
+F 2 "" H 6950 3600 50  0001 C CNN
+F 3 "" H 6950 3600 50  0001 C CNN
+	1    6950 3600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6550 3600 6950 3600
+$Comp
+L Device:C C?
+U 1 1 60A5A041
+P 4950 1500
+F 0 "C?" H 4835 1454 50  0000 R CNN
+F 1 "100n" H 4835 1545 50  0000 R CNN
+F 2 "" H 4988 1350 50  0001 C CNN
+F 3 "~" H 4950 1500 50  0001 C CNN
+	1    4950 1500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4950 1350 4950 1250
+$Comp
+L power:GND #PWR?
+U 1 1 60A5AAE5
+P 4950 1750
+F 0 "#PWR?" H 4950 1500 50  0001 C CNN
+F 1 "GND" H 4955 1577 50  0000 C CNN
+F 2 "" H 4950 1750 50  0001 C CNN
+F 3 "" H 4950 1750 50  0001 C CNN
+	1    4950 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 1750 4950 1650
+Text HLabel 6550 3700 2    50   Input ~ 0
+dac4_din
+Text HLabel 6550 3800 2    50   Input ~ 0
+dac4_clk
+$Comp
+L DAC8564IAPW:DAC8564IAPW IC?
+U 1 1 60A446BC
+P 4750 3200
+F 0 "IC?" H 5650 3465 50  0000 C CNN
+F 1 "DAC8564IAPW" H 5650 3374 50  0000 C CNN
+F 2 "SOP65P640X120-16N" H 6400 3300 50  0001 L CNN
+F 3 "http://www.ti.com/lit/gpn/dac8564" H 6400 3200 50  0001 L CNN
+F 4 "16-Bit, Quad Channel, Ultra-Low Glitch, Voltage Output DAC with 2.5V, 2ppm/C Internal Reference" H 6400 3100 50  0001 L CNN "Description"
+F 5 "1.2" H 6400 3000 50  0001 L CNN "Height"
+F 6 "Texas Instruments" H 6400 2900 50  0001 L CNN "Manufacturer_Name"
+F 7 "DAC8564IAPW" H 6400 2800 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "595-DAC8564IAPW" H 6400 2700 50  0001 L CNN "Mouser Part Number"
+F 9 "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/DAC8564IAPW?qs=xL7PkI2RoJ7hkn2IPLSbKw%3D%3D" H 6400 2600 50  0001 L CNN "Mouser Price/Stock"
+F 10 "DAC8564IAPW" H 6400 2500 50  0001 L CNN "Arrow Part Number"
+F 11 "https://www.arrow.com/en/products/dac8564iapw/texas-instruments" H 6400 2400 50  0001 L CNN "Arrow Price/Stock"
+	1    4750 3200
+	1    0    0    -1  
+$EndComp
+Text HLabel 6550 3900 2    50   Input ~ 0
+dac4_cs
+$EndSCHEMATC

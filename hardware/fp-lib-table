@@ -1,5 +1,6 @@
 (fp_lib_table
-  (lib (name TL1265RGQTCLR)(type KiCad)(uri ${KIPRJMOD}/models/TL1265RGQTCLR.pretty)(options "")(descr ""))
   (lib (name SD-50BV)(type KiCad)(uri ${KIPRJMOD}/models/SD-50BV.pretty)(options "")(descr ""))
   (lib (name PJ398SM-12)(type KiCad)(uri ${KIPRJMOD}/models/PJ398SM-12.pretty)(options "")(descr ""))
+  (lib (name DAC5578)(type KiCad)(uri ${KIPRJMOD}/models/DAC5578.pretty)(options "")(descr ""))
+  (lib (name DAC8564)(type KiCad)(uri ${KIPRJMOD}/models/DAC8564.pretty)(options "")(descr ""))
 )
