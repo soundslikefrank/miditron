@@ -117,17 +117,18 @@ dependencies = [
 
 [[package]]
 name = "dac5578"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "327ecab8a336b1d8cc5fd4ebfa7a9e2013a05633fdf7258e492c25696e5fc6dc"
+checksum = "8f5ad6694cbcd598a81232f8f4a18d2ad2680ec686883f2b841b97588fbb380e"
 dependencies = [
  "embedded-hal",
 ]
 
 [[package]]
 name = "dac8564"
-version = "0.0.2"
-source = "git+https://github.com/chmanie/dac8564?rev=42ba22d#42ba22d319028754ea6e42abf9272b7d68f64586"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "250d15bc3268cd427a936a25067d76f5d8621e41cdf7f77f30f62f837f9912d9"
 dependencies = [
  "embedded-hal",
 ]

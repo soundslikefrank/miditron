@@ -14,7 +14,7 @@ extern crate stm32l4xx_hal as hal;
 use crate::hal::delay::Delay;
 use cortex_m::{interrupt::free, peripheral::syst::SystClkSource};
 use dac5578::DAC5578;
-use dac8564::DAC8564;
+use dac8564::Dac as DAC8564;
 use dummy_pin::DummyPin;
 use embedded_hal::spi::{Mode, Phase, Polarity};
 use hal::{
@@ -132,10 +132,10 @@ fn main() -> ! {
 
     loop {
         timer.delay_ms(1000_u32);
-        if let Ok(_) = dac4.write_blocking(dac8564::Channel::A, 32000) {
+        if let Ok(_) = dac4.write(dac8564::Channel::A, 32000) {
             // what now?
         }
-        if let Ok(_) = dac8.write_channel(dac5578::Channel::A, 128) {
+        if let Ok(_) = dac8.write(dac5578::Channel::A, 128) {
             // party?
         }
     }
