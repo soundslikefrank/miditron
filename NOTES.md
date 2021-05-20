@@ -68,3 +68,16 @@ https://community.st.com/s/question/0D50X0000C4MPwQ/trigger-spi-dma-transfer-fro
 
 ## DAC Layoutes notes
 As a result of the single ground pin of the DACx578, all return currents(including digital and analog return currents for the DAC) must flow through a single point. Ideally, GND would be connected directly to an analog ground plane. This plane would be separate from the ground connection for the digital components until they were connected at the power-entry point of the system.
+
+## To adjust the chip
+
+1*) Remove old HAL
+2*) Add new HAL, adjust version and features in Cargo.yml
+3) Change chip in `[package.metadata]` in Cargo.yml and in `Embed.toml`
+4*) Change target in openocd.cfg
+5) Adjust `.cargo/config` (`--chip xxx`) setting
+6) Adjust `memory.x`
+7*) Change file in .gdbinit (e.g. `thumbv7em-none-eabi` vs `thumbv7em-none-eabihf`)
+8) Change the code and hope for the best
+
+`*` = might be optional

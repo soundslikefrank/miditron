@@ -6,7 +6,7 @@ name = "miditron"
 version = "0.1.0"
 
 [package.metadata]
-chip = "STM32L452RETx"
+chip = "STM32F446RETx"
 
 [dependencies]
 cortex-m = "0.7.2"
@@ -20,9 +20,9 @@ embedded-midi = "0.1.1"
 dac5578 = "0.2.0"
 dac8564 = "0.0.3"
 
-[dependencies.stm32l4xx-hal]
-features = ["stm32l4x2", "rt"]
-version = "0.6.0"
+[dependencies.stm32f4xx-hal]
+features = ["stm32f446", "rt"]
+version ="0.9.0"
 
 # this lets you use `cargo fix`!
 [[bin]]

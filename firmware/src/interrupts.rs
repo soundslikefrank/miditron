@@ -10,31 +10,24 @@ use crate::midi::MIDI_STREAM;
 #[interrupt]
 fn USART1() {
     free(|cs| {
-        let is_rxne = unsafe { (*pac::USART1::ptr()).isr.read().rxne().bit_is_set() };
-        if is_rxne {
-            unsafe { (*pac::USART1::ptr()).rdr.read().bits() };
+        let sr = unsafe { (*pac::USART1::ptr()).sr.read() };
+        if sr.rxne().bit_is_set() {
             let mut queue = MIDI_STREAM.borrow(cs).borrow_mut();
             queue
-                .enqueue(unsafe { (*pac::USART1::ptr()).rdr.read().bits() } as u8)
+                .enqueue(unsafe { (*pac::USART1::ptr()).dr.read().bits() as u8 })
                 .ok();
         } else {
-            // Clear rxne bit anyways
-            unsafe { (*pac::USART1::ptr()).rqr.write(|w| w.rxfrq().set_bit()) }
-        }
-        // Clear all error flags
-        unsafe {
-            (*pac::USART1::ptr()).icr.write(|w| {
-                w.idlecf()
-                    .set_bit()
-                    .orecf()
-                    .set_bit()
-                    .ncf()
-                    .set_bit()
-                    .fecf()
-                    .set_bit()
-                    .pecf()
-                    .set_bit()
-            })
+            // Check for errors
+            if sr.idle().bit_is_set()
+                || sr.ore().bit_is_set()
+                || sr.nf().bit_is_set()
+                || sr.fe().bit_is_set()
+                || sr.pe().bit_is_set()
+            {
+                // Clear all error flags (just read DR register)
+                // RM0008: This bit is set by hardware when a de-synchronization, excessive noise or a break character is detected. It is cleared by a software sequence (an read to the USART_SR register followed by a read to the USART_DR register).
+                unsafe { (*pac::USART1::ptr()).dr.read().bits() as u8 };
+            }
         }
     });
 }

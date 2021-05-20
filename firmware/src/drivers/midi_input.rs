@@ -1,44 +1,32 @@
 use cortex_m::peripheral::NVIC;
 use hal::{
-    device::USART1,
-    gpio::{
-        gpioa::{AFRH, MODER},
-        Floating, Input, PA10, PA9,
-    },
+    gpio::{gpioa::PA10, Floating, Input},
+    pac::USART1,
     prelude::*,
-    rcc::{Clocks, APB2},
-    serial::{Config, Event, Serial},
+    rcc::Clocks,
+    serial::{config::Config, Event, NoTx, Serial},
     stm32::interrupt,
 };
 
 pub struct MidiInput;
 
 impl MidiInput {
-    pub fn init(
-        usart: USART1,
-        (pin_tx, pin_rx): (PA9<Input<Floating>>, PA10<Input<Floating>>),
-        clocks: Clocks,
-        apb: &mut APB2,
-        moder: &mut MODER,
-        afrh: &mut AFRH,
-    ) -> () {
-        let tx = pin_tx.into_af7(moder, afrh);
-        let rx = pin_rx.into_af7(moder, afrh);
+    pub fn init(usart: USART1, rx_pin: PA10<Input<Floating>>, clocks: Clocks) {
+        let rx = rx_pin.into_alternate_af7();
 
-        let mut serial = Serial::usart1(
+        if let Ok(mut serial) = Serial::usart1(
             usart,
-            (tx, rx),
+            (NoTx, rx),
             Config::default().baudrate(31_250.bps()),
             clocks,
-            apb,
-        );
+        ) {
+            // Set the rxneie interrupt bit
+            serial.listen(Event::Rxne);
 
-        // Set the rxneie interrupt bit
-        serial.listen(Event::Rxne);
-
-        // Enable interrupt
-        unsafe {
-            NVIC::unmask(interrupt::USART1);
+            // Enable interrupt
+            unsafe {
+                NVIC::unmask(interrupt::USART1);
+            }
         }
     }
 }

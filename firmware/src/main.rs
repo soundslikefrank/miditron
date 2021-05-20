@@ -9,7 +9,7 @@ extern crate cortex_m_rt as rt;
 extern crate cortex_m_semihosting as sh;
 extern crate panic_semihosting;
 
-extern crate stm32l4xx_hal as hal;
+extern crate stm32f4xx_hal as hal;
 
 use crate::hal::delay::Delay;
 use cortex_m::{interrupt::free, peripheral::syst::SystClkSource};
@@ -18,9 +18,10 @@ use dac8564::Dac as DAC8564;
 use dummy_pin::DummyPin;
 use embedded_hal::spi::{Mode, Phase, Polarity};
 use hal::{
+    gpio,
     i2c::I2c,
     prelude::*,
-    spi::Spi,
+    spi::{NoMiso, Spi},
     time::{Hertz, KiloHertz, MegaHertz},
 };
 use rt::ExceptionFrame;
@@ -37,12 +38,6 @@ use voices::Voices;
 const F_CPU: MegaHertz = MegaHertz(80);
 const F_SYSTICK: KiloHertz = KiloHertz(8);
 
-/// SPI mode
-pub const MODE: Mode = Mode {
-    phase: Phase::CaptureOnFirstTransition,
-    polarity: Polarity::IdleLow,
-};
-
 #[entry]
 fn main() -> ! {
     // -- Begin magic macro block --
@@ -52,14 +47,15 @@ fn main() -> ! {
     // -- End magic macro block --
 
     let cp = cortex_m::Peripherals::take().unwrap();
-    let dp = hal::stm32::Peripherals::take().unwrap();
+    let dp = hal::pac::Peripherals::take().unwrap();
 
-    let mut flash = dp.FLASH.constrain();
-    let mut rcc = dp.RCC.constrain();
-    let mut pwr = dp.PWR.constrain(&mut rcc.apb1r1);
+    // let mut flash = dp.FLASH.constrain();
+    let rcc = dp.RCC.constrain();
+    // let mut pwr = dp.PWR.constrain(&mut rcc.apb1r1);
 
-    let mut gpioa = dp.GPIOA.split(&mut rcc.ahb2);
-    let mut gpiob = dp.GPIOB.split(&mut rcc.ahb2);
+    let gpioa = dp.GPIOA.split();
+    let gpiob = dp.GPIOB.split();
+    let gpioc = dp.GPIOC.split();
 
     let mut syst = cp.SYST;
 
@@ -68,10 +64,11 @@ fn main() -> ! {
 
     let clocks = rcc
         .cfgr
-        .sysclk(F_CPU)
-        .pclk1(F_CPU)
-        .pclk2(F_CPU)
-        .freeze(&mut flash.acr, &mut pwr);
+        .hclk(84.mhz())
+        .sysclk(84.mhz())
+        .pclk1(42.mhz())
+        .pclk2(84.mhz())
+        .freeze();
 
     syst.set_clock_source(SystClkSource::Core);
     syst.set_reload(f_cpu / f_syst);
@@ -79,52 +76,49 @@ fn main() -> ! {
     syst.enable_counter();
     syst.enable_interrupt();
 
-    MidiInput::init(
-        dp.USART1,
-        (gpioa.pa9, gpioa.pa10),
-        clocks,
-        &mut rcc.apb2,
-        &mut gpioa.moder,
-        &mut gpioa.afrh,
-    );
+    MidiInput::init(dp.USART1, gpioa.pa10, clocks);
 
     MidiStream::init();
 
-    let sck = gpioa.pa5.into_af5(&mut gpioa.moder, &mut gpioa.afrl);
-    let miso = gpioa.pa6.into_af5(&mut gpioa.moder, &mut gpioa.afrl);
-    let mosi = gpioa.pa7.into_af5(&mut gpioa.moder, &mut gpioa.afrl);
+    let sck = gpiob
+        .pb10
+        .into_alternate_af5()
+        .set_speed(gpio::Speed::VeryHigh);
+    let mosi = gpioc
+        .pc1
+        .into_alternate_af7()
+        .set_speed(gpio::Speed::VeryHigh);
 
-    let nss = gpioa
-        .pa4
-        .into_push_pull_output(&mut gpioa.moder, &mut gpioa.otyper);
+    let nss = gpiob.pb12.into_push_pull_output();
     let enable = DummyPin::new_low();
     let ldac = DummyPin::new_low();
 
-    let spi = Spi::spi1(
-        dp.SPI1,
-        (sck, miso, mosi),
-        MODE,
-        1.mhz(),
+    let spi = Spi::spi2(
+        dp.SPI2,
+        (sck, NoMiso, mosi),
+        Mode {
+            polarity: Polarity::IdleLow,
+            phase: Phase::CaptureOnSecondTransition,
+        },
+        1.mhz().into(),
         clocks,
-        &mut rcc.apb2,
     );
 
     let mut dac4 = DAC8564::new(spi, nss, ldac, enable);
     dac4.enable();
 
-    let mut scl = gpiob
-        .pb10
-        .into_open_drain_output(&mut gpiob.moder, &mut gpiob.otyper);
-    scl.internal_pull_up(&mut gpiob.pupdr, true);
-    let scl = scl.into_af4(&mut gpiob.moder, &mut gpiob.afrh);
+    let scl = gpioa
+        .pa8
+        .into_alternate_af4()
+        .internal_pull_up(true)
+        .set_open_drain();
+    let sda = gpioc
+        .pc9
+        .into_alternate_af4()
+        .internal_pull_up(true)
+        .set_open_drain();
 
-    let mut sda = gpiob
-        .pb11
-        .into_open_drain_output(&mut gpiob.moder, &mut gpiob.otyper);
-    sda.internal_pull_up(&mut gpiob.pupdr, true);
-    let sda = sda.into_af4(&mut gpiob.moder, &mut gpiob.afrh);
-
-    let i2c = I2c::i2c2(dp.I2C2, (scl, sda), 100.khz(), clocks, &mut rcc.apb1r1);
+    let i2c = I2c::new(dp.I2C3, (scl, sda), 400.khz().into(), clocks);
 
     let mut dac8 = DAC5578::new(i2c, dac5578::Address::PinLow);
 
@@ -132,10 +126,10 @@ fn main() -> ! {
 
     loop {
         timer.delay_ms(1000_u32);
-        if let Ok(_) = dac4.write(dac8564::Channel::A, 32000) {
+        if let Ok(_) = dac4.write(dac8564::Channel::A, 32767) {
             // what now?
         }
-        if let Ok(_) = dac8.write(dac5578::Channel::A, 128) {
+        if let Ok(_) = dac8.write(dac5578::Channel::A, 255) {
             // party?
         }
     }
