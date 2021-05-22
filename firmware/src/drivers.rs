@@ -13,7 +13,7 @@ use self::dac4::{Dac4, Dac4Type};
 use self::dac8::{Dac8, Dac8Type};
 use self::midi_input::MidiInput;
 
-const F_CPU: MegaHertz = MegaHertz(80);
+const F_CPU: MegaHertz = MegaHertz(84);
 const F_SYSTICK: KiloHertz = KiloHertz(8);
 
 mod dac4;
@@ -67,13 +67,12 @@ impl Drivers {
         syst.enable_counter();
         syst.enable_interrupt();
 
-        // TODO: use cont values from above
         return rcc
             .cfgr
-            .hclk(84.mhz())
-            .sysclk(84.mhz())
-            .pclk1(42.mhz())
-            .pclk2(84.mhz())
+            .hclk(F_CPU)
+            .sysclk(F_CPU)
+            .pclk1(f_cpu / 2)
+            .pclk2(F_CPU)
             .freeze();
     }
 }
