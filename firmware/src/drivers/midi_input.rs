@@ -8,6 +8,9 @@ use hal::{
     stm32::interrupt,
 };
 
+/// An informative description of this driver
+///
+/// Intterrupts: USART1
 pub struct MidiInput;
 
 impl MidiInput {

@@ -2,9 +2,7 @@
 #![allow(non_snake_case)]
 
 use hal::{pac, stm32::interrupt};
-
 use cortex_m::interrupt::free;
-
 use crate::midi::MIDI_STREAM;
 
 #[interrupt]
