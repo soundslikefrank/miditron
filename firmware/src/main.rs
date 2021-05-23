@@ -37,12 +37,8 @@ fn main() -> ! {
 
     loop {
         d.timer.delay_ms(1000_u32);
-        if let Ok(_) = d.dac4.write(dac8564::Channel::A, 65535) {
-            // what now?
-        }
-        if let Ok(_) = d.dac8.write(dac5578::Channel::A, 128) {
-            // party?
-        }
+        d.dac4.set_raw(dac8564::Channel::A, 0);
+        d.dac8.set_raw(dac5578::Channel::A, 128);
     }
 }
 

@@ -9,8 +9,8 @@ use hal::{
     time::{Hertz, KiloHertz, MegaHertz},
 };
 
-use self::dac4::{Dac4, Dac4Type};
-use self::dac8::{Dac8, Dac8Type};
+use self::dac4::Dac4;
+use self::dac8::Dac8;
 use self::midi_input::MidiInput;
 
 const F_CPU: MegaHertz = MegaHertz(84);
@@ -21,8 +21,8 @@ mod dac8;
 mod midi_input;
 
 pub struct Drivers {
-    pub dac4: Dac4Type,
-    pub dac8: Dac8Type,
+    pub dac4: Dac4,
+    pub dac8: Dac8,
     pub timer: Delay,
 }
 
@@ -45,10 +45,10 @@ impl Drivers {
         MidiInput::init(dp.USART1, gpioa.pa10, clocks);
 
         // Initialize DAC8564
-        let dac4 = Dac4::init(dp.SPI2, gpiob.pb10, gpioc.pc1, gpiob.pb12, clocks);
+        let dac4 = Dac4::new(dp.SPI2, gpiob.pb10, gpioc.pc1, gpiob.pb12, clocks);
 
         // Initialize DAC5578
-        let dac8 = Dac8::init(dp.I2C3, gpioa.pa8, gpioc.pc9, clocks);
+        let dac8 = Dac8::new(dp.I2C3, gpioa.pa8, gpioc.pc9, clocks);
 
         // Initialize timer
         // TODO: remove, this should be temporary
