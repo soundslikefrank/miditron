@@ -3,4 +3,5 @@
   (lib (name PJ398SM-12)(type KiCad)(uri ${KIPRJMOD}/models/PJ398SM-12.pretty)(options "")(descr ""))
   (lib (name DAC5578)(type KiCad)(uri ${KIPRJMOD}/models/DAC5578.pretty)(options "")(descr ""))
   (lib (name DAC8564)(type KiCad)(uri ${KIPRJMOD}/models/DAC8564.pretty)(options "")(descr ""))
+  (lib (name OPA4172IPW)(type KiCad)(uri ${KIPRJMOD}/models/OPA4172IPW.pretty)(options "")(descr ""))
 )
