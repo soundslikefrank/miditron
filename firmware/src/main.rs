@@ -17,11 +17,11 @@ use rt::ExceptionFrame;
 mod drivers;
 mod interrupts;
 mod midi;
-mod voices;
+mod router;
 
 use drivers::Drivers;
 use midi::MidiStream;
-use voices::Voices;
+use router::Router;
 
 #[entry]
 fn main() -> ! {
@@ -34,6 +34,7 @@ fn main() -> ! {
     let mut d = Drivers::setup();
 
     MidiStream::init();
+    Router::init();
 
     loop {
         d.timer.delay_ms(1000_u32);
@@ -46,7 +47,7 @@ fn main() -> ! {
 #[exception]
 fn SysTick() {
     free(|cs| {
-        MidiStream::on_message(cs, |m| Voices::process(cs, m));
+        MidiStream::on_message(cs, |m| Router::process(cs, m));
     })
 }
 
