@@ -8,21 +8,34 @@ use hal::{
     rcc::{Clocks, Rcc},
     time::{Hertz, KiloHertz, MegaHertz},
 };
+use stm32f4xx_hal::gpio::{
+    gpiob::PB15,
+    gpioc::{PC6, PC7, PC8},
+    Output, PushPull,
+};
+
+mod dac4;
+mod dac8;
+mod gates;
+mod midi_input;
 
 use self::dac4::Dac4;
 use self::dac8::Dac8;
+use self::gates::Gates;
 use self::midi_input::MidiInput;
 
 const F_CPU: MegaHertz = MegaHertz(84);
 const F_SYSTICK: KiloHertz = KiloHertz(8);
 
-mod dac4;
-mod dac8;
-mod midi_input;
-
 pub struct Drivers {
     pub dac4: Dac4,
     pub dac8: Dac8,
+    pub gates: Gates<
+        PB15<Output<PushPull>>,
+        PC6<Output<PushPull>>,
+        PC7<Output<PushPull>>,
+        PC8<Output<PushPull>>,
+    >,
     pub timer: Delay,
 }
 
@@ -54,7 +67,22 @@ impl Drivers {
         // TODO: remove, this should be temporary
         let timer = Delay::new(syst, clocks);
 
-        return Drivers { dac4, dac8, timer };
+        let mut led = gpioa.pa5.into_push_pull_output();
+        led.set_high().unwrap();
+
+        let gates = Gates::new(
+            gpiob.pb15.into_push_pull_output(),
+            gpioc.pc6.into_push_pull_output(),
+            gpioc.pc7.into_push_pull_output(),
+            gpioc.pc8.into_push_pull_output(),
+        );
+
+        return Drivers {
+            dac4,
+            dac8,
+            gates,
+            timer,
+        };
     }
 
     fn set_clocks(rcc: Rcc, syst: &mut SYST) -> Clocks {
