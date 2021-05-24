@@ -23,7 +23,7 @@ fn USART1() {
                 || sr.pe().bit_is_set()
             {
                 // Clear all error flags (just read DR register)
-                // RM0008: This bit is set by hardware when a de-synchronization, excessive noise or a break character is detected. It is cleared by a software sequence (an read to the USART_SR register followed by a read to the USART_DR register).
+                // RM: This bit is set by hardware when a de-synchronization, excessive noise or a break character is detected. It is cleared by a software sequence (an read to the USART_SR register followed by a read to the USART_DR register).
                 unsafe { (*pac::USART1::ptr()).dr.read().bits() as u8 };
             }
         }

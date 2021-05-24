@@ -6,6 +6,7 @@ use hal::{
     pac::I2C3,
     prelude::*,
 };
+use micromath::F32Ext;
 
 pub struct Dac8 {
     dac: DAC5578<I2c<I2C3, (PA8<AlternateOD<AF4>>, PC9<AlternateOD<AF4>>)>>,
@@ -34,13 +35,24 @@ impl Dac8 {
         }
     }
 
-    pub fn set_raw(&mut self, channel: Channel, value: u16) -> () {
+    pub fn set_raw(&mut self, channel: Channel, value: u8) -> () {
         // Is there any use in error handling here?
-        self.dac.write(channel, 0);
+        self.dac.write(channel, value).ok();
     }
 
-    pub fn set_voltage(&mut self, voltage: f32) -> () {
+    pub fn set_voltage(&mut self, channel: u8, voltage: f32) -> () {
         // TODO: include calibration data somehow
-        // self.dac.write(xxx)
+        // Use calibration data in dac initialization (new())
+        // x1 = -5
+        // x2 = 5
+        // y1 = 255
+        // y2 = 0
+        // y = (0-255)/(5+5)*(x+5)+255
+        static V_MAX: f32 = 255_f32;
+        static M: f32 = -V_MAX/10_f32;
+        static C: f32 = M * 5_f32 + V_MAX;
+
+        let val = (M * voltage + C).round() as u8;
+        self.dac.write(Channel::from(channel), val).ok();
     }
 }

@@ -37,9 +37,37 @@ fn main() -> ! {
     Dispatcher::init();
 
     loop {
+        // FIXME: some check to run this not every loop (but do not use delay)
         d.timer.delay_ms(1000_u32);
-        d.dac4.set_raw(dac8564::Channel::A, 0);
-        d.dac8.set_raw(dac5578::Channel::A, 128);
+        // TODO: the following should probably go into a function
+        let (cvs, gates, mods) = free(Dispatcher::get_commands);
+
+        if let Some(cvs) = cvs {
+            cvs.iter()
+                .enumerate()
+                .filter(|(_i, v)| v.is_some())
+                .for_each(|(i, v)| {
+                    d.dac4.set_voltage(i as u8, v.unwrap());
+                })
+        }
+        // FIXME: delay the gate a bit
+        if let Some(gates) = gates {
+            gates
+                .iter()
+                .enumerate()
+                .filter(|(_i, v)| v.is_some())
+                .for_each(|(i, v)| {
+                    // Set gate here
+                })
+        }
+        if let Some(mods) = mods {
+            mods.iter()
+                .enumerate()
+                .filter(|(_i, v)| v.is_some())
+                .for_each(|(i, v)| {
+                    d.dac8.set_voltage(i as u8, v.unwrap());
+                })
+        }
     }
 }
 
