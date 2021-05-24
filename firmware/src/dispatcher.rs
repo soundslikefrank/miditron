@@ -12,9 +12,9 @@ const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
 use sh::hio; */
 
 pub struct Dispatcher {
-    cvs:Destination<f32, 4>,
+    cvs: Destination<f32, 4>,
     gates: Destination<bool, 4>,
-    mods:Destination<f32, 8>,
+    mods: Destination<f32, 8>,
     layout: Layout,
 }
 
@@ -53,13 +53,13 @@ impl Dispatcher {
     pub fn get_commands(
         cs: &CriticalSection,
     ) -> (
-        Option<[Option<f32>; 4]>,
-        Option<[Option<bool>; 4]>,
-        Option<[Option<f32>; 8]>,
+        Option<Command<f32, 4>>,
+        Option<Command<bool, 4>>,
+        Option<Command<f32, 8>>,
     ) {
-        let mut cvs: Option<[Option<f32>; 4]> = None;
-        let mut gates:Option<[Option<bool>; 4]> = None;
-        let mut mods: Option<[Option<f32>; 8]> = None;
+        let mut cvs: Option<Command<f32, 4>> = None;
+        let mut gates: Option<Command<bool, 4>> = None;
+        let mut mods: Option<Command<f32, 8>> = None;
         if let Some(d) = DISPATCHER.borrow(cs).borrow_mut().as_mut() {
             if d.cvs.changed() {
                 cvs = Some(d.cvs.get());
@@ -94,6 +94,21 @@ impl Dispatcher {
     }
 }
 
+pub struct Command<T, const N: usize>([Option<T>; N]);
+
+impl<T, const N: usize> Command<T, N> {
+    pub fn for_each<F>(&self, mut f: F) -> ()
+    where
+        F: FnMut((usize, &T)),
+    {
+        self.0
+            .iter()
+            .enumerate()
+            .filter(|(_i, v)| v.is_some())
+            .for_each(|(i, v)| f((i, v.as_ref().unwrap())))
+    }
+}
+
 struct Destination<T, const N: usize> {
     data: [Option<T>; N],
     changed: bool,
@@ -116,11 +131,11 @@ impl<T: Copy, const N: usize> Destination<T, N> {
     pub fn changed(&self) -> bool {
         self.changed
     }
-    pub fn get(&mut self) -> [Option<T>; N] {
+    pub fn get(&mut self) -> Command<T, N> {
         self.changed = false;
         let mut data: [Option<T>; N] = [None; N];
         data.copy_from_slice(&self.data);
-        data
+        Command(data)
     }
 }
 

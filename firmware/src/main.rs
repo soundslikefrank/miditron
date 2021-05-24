@@ -43,30 +43,14 @@ fn main() -> ! {
         let (cvs, gates, mods) = free(Dispatcher::get_commands);
 
         if let Some(cvs) = cvs {
-            cvs.iter()
-                .enumerate()
-                .filter(|(_i, v)| v.is_some())
-                .for_each(|(i, v)| {
-                    d.dac4.set_voltage(i as u8, v.unwrap());
-                })
+            cvs.for_each(|(i, &v)| d.dac4.set_voltage(i as u8, v));
         }
         // FIXME: delay the gate a bit
         if let Some(gates) = gates {
-            gates
-                .iter()
-                .enumerate()
-                .filter(|(_i, v)| v.is_some())
-                .for_each(|(i, v)| {
-                    // Set gate here
-                })
+            gates.for_each(|(i, &v)| d.gates.set(i, v));
         }
         if let Some(mods) = mods {
-            mods.iter()
-                .enumerate()
-                .filter(|(_i, v)| v.is_some())
-                .for_each(|(i, v)| {
-                    d.dac8.set_voltage(i as u8, v.unwrap());
-                })
+            mods.for_each(|(i, &v)| d.dac8.set_voltage(i as u8, v));
         }
     }
 }
