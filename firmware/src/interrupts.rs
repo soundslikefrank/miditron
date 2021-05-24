@@ -3,14 +3,14 @@
 
 use hal::{pac, stm32::interrupt};
 use cortex_m::interrupt::free;
-use crate::midi::MIDI_STREAM;
+use crate::midi::MidiStream;
 
 #[interrupt]
 fn USART1() {
     free(|cs| {
         let sr = unsafe { (*pac::USART1::ptr()).sr.read() };
         if sr.rxne().bit_is_set() {
-            let mut queue = MIDI_STREAM.borrow(cs).borrow_mut();
+            let mut queue = MidiStream::borrow_queue(cs);
             queue
                 .enqueue(unsafe { (*pac::USART1::ptr()).dr.read().bits() as u8 })
                 .ok();

@@ -55,7 +55,7 @@ impl Dac4 {
             clocks,
         );
 
-        let dac = DAC8564::new(spi, nss, ldac, enable);
+        let mut dac = DAC8564::new(spi, nss, ldac, enable);
         dac.enable();
 
         return Self { dac };
@@ -63,7 +63,7 @@ impl Dac4 {
 
     pub fn set_raw(&mut self, channel: Channel, value: u16) -> () {
         // Is there any use in error handling here?
-        self.dac.write(channel, 0);
+        self.dac.write(channel, value).ok();
     }
 
     pub fn set_voltage(&mut self, voltage: f32) -> () {
