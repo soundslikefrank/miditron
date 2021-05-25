@@ -27,8 +27,11 @@
 * Per channel features
   - Learn
     -> Learn the channel by long pressing on the button and then hitting a note
-  - Arpeggiator
-    -> Just standard stuff, cycle (direction), octaves
+  - Arpeggiator with four settings (v2?)
+    -> Cycle (direction)
+    -> Octaves
+    -> Clock division
+    -> Note length
 
 * CV in
   - Potential modulation destinations:
@@ -44,8 +47,17 @@
 * Save all the settings where you left off after power down
 
 * Settings via SysEx (v2)
+* React to MIDI CC messages to change settings (see also [here](https://docs.google.com/spreadsheets/u/0/d/15TJX1dSbiRo1jPDxPYR4GV2ICQuVu5B6wAjiAAwP60o/pub?gid=1))
+
+## Specs
+
+* Velocity sensitive gates probably need to be between 0 and 5 volts
+  - DAC8 range from -5 to 5 volts nominal?
+  - DAC4 range from 0 - 8 volts nominal?
 
 ## Random ideas
 
+* Tap tempo
 * Differently colored LED depending on signal (e.g. NoteOn has a different color
   than CC, modwheel, breath, whatever).
+
