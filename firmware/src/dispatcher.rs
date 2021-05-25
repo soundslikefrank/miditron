@@ -146,8 +146,12 @@ struct Layout {
 
 impl Layout {
     fn new() -> Self {
-        Self { channels: [0; 4] }
+        Self {
+            channels: [0, 2, 2, 2],
+        }
     }
+    // FIXME: like this it is not possible to map one midi channel to two gates
+    // Also do we need to set it independently?
     fn get_channel(&self, midi_channel: u8) -> Option<usize> {
         // FIXME: also not really great
         self.channels.iter().position(|c| *c == midi_channel)
