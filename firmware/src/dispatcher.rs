@@ -1,8 +1,9 @@
 use cortex_m::interrupt::CriticalSection;
 
-use core::cell::RefCell;
+use core::cell::{RefCell, RefMut};
 use cortex_m::interrupt::{free, Mutex};
-use embedded_midi::MidiMessage as MM;
+
+use crate::drivers::ButtonState;
 
 static DISPATCHER: Mutex<RefCell<Option<Dispatcher>>> = Mutex::new(RefCell::new(None));
 
@@ -11,16 +12,31 @@ const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
 /* use core::fmt::Write;
 use sh::hio; */
 
+// TODO: this is a test to see how more complex commands could work
+#[derive(Clone, Copy)]
+pub enum LedCommand {
+    On,
+    Off,
+    Toggle,
+}
+
+// Change this (tupel of colors and brightness? more complex instructions?)
+type LedDestination = Destination<LedCommand, 4>;
+type CvDestination = Destination<f32, 4>;
+type GateDestination = Destination<bool, 4>;
+type ModDestination = Destination<f32, 8>;
+
 pub struct Dispatcher {
-    cvs: Destination<f32, 4>,
-    gates: Destination<bool, 4>,
-    mods: Destination<f32, 8>,
+    leds: LedDestination,
+    cvs: CvDestination,
+    gates: GateDestination,
+    mods: ModDestination,
     layout: Layout,
 }
 
 impl Dispatcher {
     pub fn init() {
-        free(move |cs| {
+        free(|cs| {
             let mut dispatcher = DISPATCHER.borrow(cs).borrow_mut();
             *dispatcher = Some(Dispatcher::new());
         });
@@ -28,6 +44,7 @@ impl Dispatcher {
 
     pub fn new() -> Self {
         Self {
+            leds: Destination::new(),
             cvs: Destination::new(),
             gates: Destination::new(),
             mods: Destination::new(),
@@ -35,18 +52,8 @@ impl Dispatcher {
         }
     }
 
-    // TODO: this feels a bit misplaced in this module
-    pub fn process_midi_message(cs: &CriticalSection, msg: MM) {
-        /* if let Ok(mut hstdout) = hio::hstdout() {
-            writeln!(hstdout, "{:?}", msg).ok();
-        } */
-        if let Some(d) = DISPATCHER.borrow(cs).borrow_mut().as_mut() {
-            match msg {
-                MM::NoteOn(c, n, v) => d.handle_note_on(c.into(), n.into(), v.into()),
-                MM::NoteOff(c, _n, _v) => d.handle_note_off(c.into()),
-                _ => {}
-            }
-        }
+    pub fn borrow(cs: &CriticalSection) -> RefMut<Option<Dispatcher>> {
+        DISPATCHER.borrow(cs).borrow_mut()
     }
 
     // TODO: this isn't really great
@@ -56,10 +63,12 @@ impl Dispatcher {
         Option<Command<f32, 4>>,
         Option<Command<bool, 4>>,
         Option<Command<f32, 8>>,
+        Option<Command<LedCommand, 4>>,
     ) {
         let mut cvs: Option<Command<f32, 4>> = None;
         let mut gates: Option<Command<bool, 4>> = None;
         let mut mods: Option<Command<f32, 8>> = None;
+        let mut leds: Option<Command<LedCommand, 4>> = None;
         if let Some(d) = DISPATCHER.borrow(cs).borrow_mut().as_mut() {
             if d.cvs.changed() {
                 cvs = Some(d.cvs.get());
@@ -70,22 +79,38 @@ impl Dispatcher {
             if d.mods.changed() {
                 mods = Some(d.mods.get());
             }
-            return (cvs, gates, mods);
+            if d.leds.changed() {
+                leds = Some(d.leds.get());
+            }
+            // TODO: Maybe return a struct here instead of a tupel?
+            return (cvs, gates, mods, leds);
         }
-        (None, None, None)
+        (None, None, None, None)
     }
 
     // TODO: handle velocity (dynamic gates)
-    fn handle_note_on(&mut self, midi_chan: u8, midi_note: u8, _velocity: u8) -> () {
+    pub fn handle_note_on(&mut self, midi_chan: u8, midi_note: u8, _velocity: u8) -> () {
         if let Some(chan) = self.layout.get_channel(midi_chan) {
             self.cvs.set(chan, Self::cv_from_note(midi_note));
             self.gates.set(chan, true);
         }
     }
 
-    fn handle_note_off(&mut self, midi_chan: u8) -> () {
+    pub fn handle_note_off(&mut self, midi_chan: u8) -> () {
         if let Some(chan) = self.layout.get_channel(midi_chan) {
             self.gates.set(chan, false);
+        }
+    }
+
+    pub fn handle_button_presses(
+        &mut self,
+        btn_states: (ButtonState, ButtonState, ButtonState, ButtonState),
+    ) -> () {
+        match btn_states {
+            (ButtonState::LongPress, _, _, _) => {
+                self.leds.set(0, LedCommand::Toggle);
+            }
+            _ => {}
         }
     }
 

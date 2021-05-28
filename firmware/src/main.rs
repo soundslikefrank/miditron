@@ -12,7 +12,6 @@ extern crate panic_semihosting;
 extern crate stm32f4xx_hal as hal;
 
 use cortex_m::{interrupt::free, prelude::*};
-use rt::ExceptionFrame;
 
 mod dispatcher;
 mod drivers;
@@ -21,7 +20,7 @@ mod midi;
 
 use dispatcher::Dispatcher;
 use drivers::Drivers;
-use midi::MidiStream;
+use midi::Midi;
 
 #[entry]
 fn main() -> ! {
@@ -33,14 +32,14 @@ fn main() -> ! {
 
     let mut d = Drivers::setup();
 
-    MidiStream::init();
+    Midi::init();
     Dispatcher::init();
 
     loop {
         // FIXME: some check to run this not every loop (but do not use delay)
-        d.timer.delay_ms(1000_u32);
+        // d.timer.delay_ms(1000_u32);
         // TODO: the following should probably go into a function
-        let (cvs, gates, mods) = free(Dispatcher::get_commands);
+        let (cvs, gates, mods, leds) = free(Dispatcher::get_commands);
 
         if let Some(cvs) = cvs {
             cvs.for_each(|(i, &v)| d.dac4.set_voltage(i as u8, v));
@@ -52,19 +51,15 @@ fn main() -> ! {
         if let Some(mods) = mods {
             mods.for_each(|(i, &v)| d.dac8.set_voltage(i as u8, v));
         }
+        if let Some(leds) = leds {
+            leds.for_each(|(_i, &v)| {
+                match v {
+                    // TODO: I think this would probably be taken care of by the destination
+                    // LEDs should just support on or off, the state is some place else
+                    dispatcher::LedCommand::Toggle => d.leds.toggle(),
+                    _ => {},
+                }
+            });
+        }
     }
-}
-
-#[allow(non_snake_case)]
-#[exception]
-fn SysTick() {
-    free(|cs| {
-        MidiStream::on_message(cs, |m| Dispatcher::process_midi_message(cs, m));
-    })
-}
-
-#[allow(non_snake_case)]
-#[exception]
-fn HardFault(ef: &ExceptionFrame) -> ! {
-    panic!("{:#?}", ef);
 }

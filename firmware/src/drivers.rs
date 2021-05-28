@@ -17,12 +17,17 @@ use stm32f4xx_hal::gpio::{
 mod dac4;
 mod dac8;
 mod gates;
+mod leds;
 mod midi_input;
+mod push_buttons;
 
 use self::dac4::Dac4;
 use self::dac8::Dac8;
 use self::gates::Gates;
+use self::leds::Leds;
 use self::midi_input::MidiInput;
+
+pub use self::push_buttons::{ButtonState, PushButtons};
 
 const F_CPU: MegaHertz = MegaHertz(84);
 const F_SYSTICK: KiloHertz = KiloHertz(8);
@@ -30,17 +35,22 @@ const F_SYSTICK: KiloHertz = KiloHertz(8);
 pub struct Drivers {
     pub dac4: Dac4,
     pub dac8: Dac8,
+    // TODO: this is a bit weird, can we make it better?
     pub gates: Gates<
         PB15<Output<PushPull>>,
         PC6<Output<PushPull>>,
         PC7<Output<PushPull>>,
         PC8<Output<PushPull>>,
     >,
-    pub timer: Delay,
+    pub leds: Leds,
+    // pub timer: Delay,
 }
 
 impl Drivers {
     pub fn setup() -> Drivers {
+        let Hertz(f_cpu) = F_CPU.into();
+        let Hertz(f_systick) = F_SYSTICK.into();
+
         let cp = cortex_m::Peripherals::take().unwrap();
         let dp = pac::Peripherals::take().unwrap();
 
@@ -52,10 +62,27 @@ impl Drivers {
         let gpiob = dp.GPIOB.split();
         let gpioc = dp.GPIOC.split();
 
-        let clocks = Self::set_clocks(rcc, &mut syst);
+        let clocks = Self::set_clocks(rcc, f_cpu, f_systick, &mut syst);
+
+        syst.set_clock_source(SystClkSource::Core);
+        // TODO: use const
+        syst.set_reload(10500);
+        syst.clear_current();
+        syst.enable_counter();
+        syst.enable_interrupt();
 
         // Initialize UART midi input
         MidiInput::init(dp.USART1, gpioa.pa10, clocks);
+
+        // Initialize push buttons input
+        PushButtons::init(
+            gpioc.pc13.into_pull_down_input(),
+            gpioc.pc0.into_pull_down_input(),
+            gpioc.pc2.into_pull_down_input(),
+            gpioc.pc3.into_pull_down_input(),
+            // TODO: use const
+            8000,
+        );
 
         // Initialize DAC8564
         let dac4 = Dac4::new(dp.SPI2, gpiob.pb10, gpioc.pc1, gpiob.pb12, clocks);
@@ -65,10 +92,7 @@ impl Drivers {
 
         // Initialize timer
         // TODO: remove, this should be temporary
-        let timer = Delay::new(syst, clocks);
-
-        let mut led = gpioa.pa5.into_push_pull_output();
-        led.set_high().unwrap();
+        // let timer = Delay::new(syst, clocks);
 
         let gates = Gates::new(
             gpiob.pb15.into_push_pull_output(),
@@ -77,30 +101,25 @@ impl Drivers {
             gpioc.pc8.into_push_pull_output(),
         );
 
+        // Initialize LEDs
+        let leds = Leds::new(gpioa.pa5.into_push_pull_output());
+
         return Drivers {
             dac4,
             dac8,
             gates,
-            timer,
+            leds,
+            // timer,
         };
     }
 
-    fn set_clocks(rcc: Rcc, syst: &mut SYST) -> Clocks {
-        let Hertz(f_cpu) = F_CPU.into();
-        let Hertz(f_syst) = F_SYSTICK.into();
-
-        syst.set_clock_source(SystClkSource::Core);
-        syst.set_reload(f_cpu / f_syst);
-        syst.clear_current();
-        syst.enable_counter();
-        syst.enable_interrupt();
-
+    fn set_clocks(rcc: Rcc, f_cpu: u32, f_syst: u32, syst: &mut SYST) -> Clocks {
         return rcc
             .cfgr
-            .hclk(F_CPU)
-            .sysclk(F_CPU)
-            .pclk1(f_cpu / 2)
-            .pclk2(F_CPU)
+            .hclk(84.mhz())
+            .sysclk(84.mhz())
+            .pclk1(42.mhz())
+            .pclk2(84.mhz())
             .freeze();
     }
 }
