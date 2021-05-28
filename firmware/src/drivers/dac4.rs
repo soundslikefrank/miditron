@@ -9,7 +9,7 @@ use hal::{
 };
 use stm32f4xx_hal::{
     gpio::{
-        gpiob::{PB10, PB12},
+        gpiob::{PB13, PB12},
         gpioc::PC1,
         Alternate, Floating, Input, Output, PushPull, AF5, AF7,
     },
@@ -19,7 +19,7 @@ use micromath::F32Ext;
 
 pub struct Dac4 {
     dac: DAC8564<
-        Spi<SPI2, (PB10<Alternate<AF5>>, NoMiso, PC1<Alternate<AF7>>)>,
+        Spi<SPI2, (PB13<Alternate<AF5>>, NoMiso, PC1<Alternate<AF7>>)>,
         PB12<Output<PushPull>>,
         DummyPin<level::Low>,
         DummyPin<level::Low>,
@@ -29,7 +29,7 @@ pub struct Dac4 {
 impl Dac4 {
     pub fn new(
         spi_port: SPI2,
-        sck_pin: PB10<Input<Floating>>,
+        sck_pin: PB13<Input<Floating>>,
         mosi_pin: PC1<Input<Floating>>,
         nss_pin: PB12<Input<Floating>>,
         clocks: Clocks,

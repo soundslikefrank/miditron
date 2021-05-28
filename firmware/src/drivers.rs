@@ -2,10 +2,10 @@
 
 use cortex_m::peripheral::{syst::SystClkSource, SYST};
 use hal::{
-    delay::Delay,
-    pac,
+    // delay::Delay,
     prelude::*,
     rcc::{Clocks, Rcc},
+    stm32,
     time::{Hertz, KiloHertz, MegaHertz},
 };
 use stm32f4xx_hal::gpio::{
@@ -52,7 +52,7 @@ impl Drivers {
         let Hertz(f_systick) = F_SYSTICK.into();
 
         let cp = cortex_m::Peripherals::take().unwrap();
-        let dp = pac::Peripherals::take().unwrap();
+        let dp = stm32::Peripherals::take().unwrap();
 
         let mut syst = cp.SYST;
 
@@ -77,7 +77,7 @@ impl Drivers {
         );
 
         // Initialize DAC8564
-        let dac4 = Dac4::new(dp.SPI2, gpiob.pb10, gpioc.pc1, gpiob.pb12, clocks);
+        let dac4 = Dac4::new(dp.SPI2, gpiob.pb13, gpioc.pc1, gpiob.pb12, clocks);
 
         // Initialize DAC5578
         let dac8 = Dac8::new(dp.I2C3, gpioa.pa8, gpioc.pc9, clocks);
@@ -93,7 +93,9 @@ impl Drivers {
         );
 
         // Initialize LEDs
-        let leds = Leds::new(gpioa.pa5.into_push_pull_output());
+        let mut leds = Leds::new(dp.I2C2, gpiob.pb10, gpioc.pc12, clocks);
+
+        leds.enable();
 
         return Drivers {
             dac4,
