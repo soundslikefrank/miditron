@@ -11,7 +11,7 @@ extern crate panic_semihosting;
 
 extern crate stm32f4xx_hal as hal;
 
-use cortex_m::{interrupt::free, prelude::*};
+use cortex_m::interrupt::free;
 
 mod dispatcher;
 mod drivers;
@@ -52,14 +52,7 @@ fn main() -> ! {
             mods.for_each(|(i, &v)| d.dac8.set_voltage(i as u8, v));
         }
         if let Some(leds) = leds {
-            leds.for_each(|(_i, &v)| {
-                match v {
-                    // TODO: I think this would probably be taken care of by the destination
-                    // LEDs should just support on or off, the state is some place else
-                    dispatcher::LedCommand::Toggle => d.leds.toggle(),
-                    _ => {},
-                }
-            });
+            leds.for_each(|(i, &v)| d.leds.set(i as u8, v));
         }
     }
 }

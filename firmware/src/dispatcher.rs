@@ -12,16 +12,8 @@ const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
 /* use core::fmt::Write;
 use sh::hio; */
 
-// TODO: this is a test to see how more complex commands could work
-#[derive(Clone, Copy)]
-pub enum LedCommand {
-    On,
-    Off,
-    Toggle,
-}
-
 // Change this (tupel of colors and brightness? more complex instructions?)
-type LedDestination = Destination<LedCommand, 4>;
+type LedDestination = Destination<(u8, [u8; 3]), 4>;
 type CvDestination = Destination<f32, 4>;
 type GateDestination = Destination<bool, 4>;
 type ModDestination = Destination<f32, 8>;
@@ -63,27 +55,11 @@ impl Dispatcher {
         Option<Command<f32, 4>>,
         Option<Command<bool, 4>>,
         Option<Command<f32, 8>>,
-        Option<Command<LedCommand, 4>>,
+        Option<Command<(u8, [u8; 3]), 4>>,
     ) {
-        let mut cvs: Option<Command<f32, 4>> = None;
-        let mut gates: Option<Command<bool, 4>> = None;
-        let mut mods: Option<Command<f32, 8>> = None;
-        let mut leds: Option<Command<LedCommand, 4>> = None;
         if let Some(d) = DISPATCHER.borrow(cs).borrow_mut().as_mut() {
-            if d.cvs.changed() {
-                cvs = Some(d.cvs.get());
-            }
-            if d.gates.changed() {
-                gates = Some(d.gates.get());
-            }
-            if d.mods.changed() {
-                mods = Some(d.mods.get());
-            }
-            if d.leds.changed() {
-                leds = Some(d.leds.get());
-            }
             // TODO: Maybe return a struct here instead of a tupel?
-            return (cvs, gates, mods, leds);
+            return (d.cvs.next(), d.gates.next(), d.mods.next(), d.leds.next());
         }
         (None, None, None, None)
     }
@@ -108,7 +84,7 @@ impl Dispatcher {
     ) -> () {
         match btn_states {
             (ButtonState::Press, _, _, _) => {
-                self.leds.set(0, LedCommand::Toggle);
+                self.leds.set(0, (128, [255, 0, 10]));
             }
             _ => {}
         }
@@ -153,14 +129,14 @@ impl<T: Copy, const N: usize> Destination<T, N> {
         self.data[n] = Some(val);
         self.changed = true;
     }
-    pub fn changed(&self) -> bool {
-        self.changed
-    }
-    pub fn get(&mut self) -> Command<T, N> {
+    pub fn next(&mut self) -> Option<Command<T, N>> {
+        if !self.changed {
+            return None;
+        }
         self.changed = false;
         let mut data: [Option<T>; N] = [None; N];
         data.copy_from_slice(&self.data);
-        Command(data)
+        Some(Command(data))
     }
 }
 
