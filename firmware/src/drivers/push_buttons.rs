@@ -5,10 +5,7 @@ use stm32f4xx_hal::gpio::{
 };
 
 use core::cell::RefCell;
-use cortex_m::{
-    asm::bkpt,
-    interrupt::{free, CriticalSection, Mutex},
-};
+use cortex_m::interrupt::{free, CriticalSection, Mutex};
 use micromath::F32Ext;
 
 // FIXME: do this everywhere
@@ -65,18 +62,8 @@ impl PushButtons {
     }
 
     fn read(&mut self) -> (ButtonState, ButtonState, ButtonState, ButtonState) {
-        let a = self.button_a.sample_idx;
-        let b = self.button_a.samples;
-        let c = self.button_a.long_press_counter;
-        if self.button_a.sample_idx == 7
-            && self.button_a.samples == 0
-            && self.button_a.long_press_counter > self.button_a.long_press_threshold
-        {
-            let foo = self.button_a.long_press_threshold;
-        }
-        let but_a_temp = self.button_a.read();
         (
-            but_a_temp,
+            self.button_a.read(),
             self.button_b.read(),
             self.button_c.read(),
             self.button_d.read(),
@@ -140,6 +127,7 @@ where
             }
             self.samples = 0;
         }
+        // Collect samples and prevent overflow
         self.samples |= self.raw_state() << self.sample_idx;
         self.sample_idx += 1;
         ButtonState::Idle

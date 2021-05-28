@@ -64,13 +64,6 @@ impl Drivers {
 
         let clocks = Self::set_clocks(rcc, f_cpu, f_systick, &mut syst);
 
-        syst.set_clock_source(SystClkSource::Core);
-        // TODO: use const
-        syst.set_reload(10500);
-        syst.clear_current();
-        syst.enable_counter();
-        syst.enable_interrupt();
-
         // Initialize UART midi input
         MidiInput::init(dp.USART1, gpioa.pa10, clocks);
 
@@ -80,8 +73,7 @@ impl Drivers {
             gpioc.pc0.into_pull_down_input(),
             gpioc.pc2.into_pull_down_input(),
             gpioc.pc3.into_pull_down_input(),
-            // TODO: use const
-            8000,
+            f_systick as u16,
         );
 
         // Initialize DAC8564
@@ -90,8 +82,7 @@ impl Drivers {
         // Initialize DAC5578
         let dac8 = Dac8::new(dp.I2C3, gpioa.pa8, gpioc.pc9, clocks);
 
-        // Initialize timer
-        // TODO: remove, this should be temporary
+        // Temp: Initialize timer
         // let timer = Delay::new(syst, clocks);
 
         let gates = Gates::new(
@@ -113,13 +104,21 @@ impl Drivers {
         };
     }
 
-    fn set_clocks(rcc: Rcc, f_cpu: u32, f_syst: u32, syst: &mut SYST) -> Clocks {
-        return rcc
+    fn set_clocks(rcc: Rcc, f_cpu: u32, f_systick: u32, syst: &mut SYST) -> Clocks {
+        let clocks = rcc
             .cfgr
-            .hclk(84.mhz())
-            .sysclk(84.mhz())
-            .pclk1(42.mhz())
-            .pclk2(84.mhz())
+            .hclk(f_cpu)
+            .sysclk(f_cpu)
+            .pclk1(f_cpu / 2)
+            .pclk2(f_cpu)
             .freeze();
+
+        syst.set_clock_source(SystClkSource::Core);
+        syst.set_reload(f_cpu / f_systick);
+        syst.clear_current();
+        syst.enable_counter();
+        syst.enable_interrupt();
+
+        clocks
     }
 }
