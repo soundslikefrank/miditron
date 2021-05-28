@@ -107,7 +107,7 @@ impl Dispatcher {
         btn_states: (ButtonState, ButtonState, ButtonState, ButtonState),
     ) -> () {
         match btn_states {
-            (ButtonState::LongPress, _, _, _) => {
+            (ButtonState::Press, _, _, _) => {
                 self.leds.set(0, LedCommand::Toggle);
             }
             _ => {}
