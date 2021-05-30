@@ -1,7 +1,7 @@
 #![allow(unsafe_code)]
 #![allow(non_snake_case)]
 
-use core::cell::Cell;
+use core::cell::{Cell, RefCell};
 
 use cortex_m::{
     asm::bkpt,
@@ -44,6 +44,8 @@ fn USART1() {
 fn SysTick() {
     free(|cs| {
         if let Some(d) = Dispatcher::borrow(cs).as_mut() {
+            d.clock.tick();
+
             if let Some(msg) = Midi::read(cs) {
                 // TODO: We probably want to put this somehwere else? Maybe back in dispatcher?
                 match msg {

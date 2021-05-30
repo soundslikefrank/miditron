@@ -39,6 +39,10 @@ impl Leds {
         self.i2c.write(self.address, &[0x0, 0b01000000]).ok();
     }
 
+    pub fn reset(&mut self) {
+        self.i2c.write(self.address, &[0x17, 0xff]).ok();
+    }
+
     pub fn set(&mut self, channel: u8, (brightness, [r, g, b]): (u8, [u8; 3])) {
         let bright_addr = 0x7 + channel as u8;
         let color_addr = 0xb + (channel as u8) * 3;

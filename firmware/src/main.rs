@@ -20,7 +20,11 @@ mod midi;
 
 use dispatcher::Dispatcher;
 use drivers::Drivers;
+use hal::time::{Hertz, KiloHertz, MegaHertz};
 use midi::Midi;
+
+const F_CPU: MegaHertz = MegaHertz(84);
+const F_SYSTICK: KiloHertz = KiloHertz(8);
 
 #[entry]
 fn main() -> ! {
@@ -29,16 +33,16 @@ fn main() -> ! {
     // static mut variables local to the entry point are safe to modify.
     // static mut MIDI_MESSAGE_BUFFER: [u8; MIDI_BUF_LEN] = [0; MIDI_BUF_LEN];
     // -- End magic macro block --
+    //
+    let Hertz(f_cpu) = F_CPU.into();
+    let Hertz(f_systick) = F_SYSTICK.into();
 
-    let mut d = Drivers::setup();
+    let mut d = Drivers::setup(f_cpu, f_systick);
 
     Midi::init();
-    Dispatcher::init();
+    Dispatcher::init(f_systick);
 
     loop {
-        // FIXME: some check to run this not every loop (but do not use delay)
-        // d.timer.delay_ms(1000_u32);
-        // TODO: the following should probably go into a function
         let (cvs, gates, mods, leds) = free(Dispatcher::get_commands);
 
         if let Some(cvs) = cvs {

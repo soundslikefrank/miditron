@@ -6,9 +6,9 @@ use hal::{
     prelude::*,
     rcc::{Clocks, Rcc},
     stm32,
-    time::{Hertz, KiloHertz, MegaHertz},
 };
 use stm32f4xx_hal::gpio::{
+    gpioa::PA5,
     gpiob::PB15,
     gpioc::{PC6, PC7, PC8},
     Output, PushPull,
@@ -29,9 +29,6 @@ use self::midi_input::MidiInput;
 
 pub use self::push_buttons::{ButtonState, PushButtons};
 
-const F_CPU: MegaHertz = MegaHertz(84);
-const F_SYSTICK: KiloHertz = KiloHertz(8);
-
 pub struct Drivers {
     pub dac4: Dac4,
     pub dac8: Dac8,
@@ -43,14 +40,12 @@ pub struct Drivers {
         PC8<Output<PushPull>>,
     >,
     pub leds: Leds,
+    pub ld2: PA5<Output<PushPull>>,
     // pub timer: Delay,
 }
 
 impl Drivers {
-    pub fn setup() -> Drivers {
-        let Hertz(f_cpu) = F_CPU.into();
-        let Hertz(f_systick) = F_SYSTICK.into();
-
+    pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
         let cp = cortex_m::Peripherals::take().unwrap();
         let dp = stm32::Peripherals::take().unwrap();
 
@@ -94,8 +89,10 @@ impl Drivers {
 
         // Initialize LEDs
         let mut leds = Leds::new(dp.I2C2, gpiob.pb10, gpioc.pc12, clocks);
-
+        leds.reset();
         leds.enable();
+
+        let ld2 = gpioa.pa5.into_push_pull_output();
 
         return Drivers {
             dac4,
@@ -103,6 +100,7 @@ impl Drivers {
             gates,
             leds,
             // timer,
+            ld2,
         };
     }
 

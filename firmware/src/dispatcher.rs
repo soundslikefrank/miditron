@@ -5,6 +5,10 @@ use cortex_m::interrupt::{free, Mutex};
 
 use crate::drivers::ButtonState;
 
+mod led;
+
+use self::led::LedDispatcher;
+
 static DISPATCHER: Mutex<RefCell<Option<Dispatcher>>> = Mutex::new(RefCell::new(None));
 
 const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
@@ -12,14 +16,29 @@ const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
 /* use core::fmt::Write;
 use sh::hio; */
 
-// Change this (tupel of colors and brightness? more complex instructions?)
-type LedDestination = Destination<(u8, [u8; 3]), 4>;
 type CvDestination = Destination<f32, 4>;
 type GateDestination = Destination<bool, 4>;
 type ModDestination = Destination<f32, 8>;
 
+pub struct Clock(u32);
+
+impl Clock {
+    pub fn new() -> Self {
+        Self(0)
+    }
+
+    pub fn get(&self) -> u32 {
+        self.0
+    }
+
+    pub fn tick(&mut self) {
+        self.0 = self.0.wrapping_add(1);
+    }
+}
+
 pub struct Dispatcher {
-    leds: LedDestination,
+    pub clock: Clock,
+    leds: LedDispatcher,
     cvs: CvDestination,
     gates: GateDestination,
     mods: ModDestination,
@@ -27,16 +46,15 @@ pub struct Dispatcher {
 }
 
 impl Dispatcher {
-    pub fn init() {
-        free(|cs| {
-            let mut dispatcher = DISPATCHER.borrow(cs).borrow_mut();
-            *dispatcher = Some(Dispatcher::new());
-        });
+    pub fn init(f_refresh: u32) {
+        free(|cs| DISPATCHER.borrow(cs).replace(Some(Dispatcher::new(f_refresh))));
     }
 
-    pub fn new() -> Self {
+    pub fn new(f_refresh: u32) -> Self {
+        // leds.dispatch(led::Action::Cycle(128, [255, 0, 10]));
         Self {
-            leds: Destination::new(),
+            clock: Clock::new(),
+            leds: LedDispatcher::new(f_refresh),
             cvs: Destination::new(),
             gates: Destination::new(),
             mods: Destination::new(),
@@ -58,8 +76,14 @@ impl Dispatcher {
         Option<Command<(u8, [u8; 3]), 4>>,
     ) {
         if let Some(d) = DISPATCHER.borrow(cs).borrow_mut().as_mut() {
+            let now = d.clock.get();
             // TODO: Maybe return a struct here instead of a tupel?
-            return (d.cvs.next(), d.gates.next(), d.mods.next(), d.leds.next());
+            return (
+                d.cvs.next(),
+                d.gates.next(),
+                d.mods.next(),
+                d.leds.next(now),
+            );
         }
         (None, None, None, None)
     }
@@ -84,7 +108,8 @@ impl Dispatcher {
     ) -> () {
         match btn_states {
             (ButtonState::Press, _, _, _) => {
-                self.leds.set(0, (128, [255, 0, 10]));
+                self.leds
+                    .dispatch(led::Action::Cycle(0, (128, [255, 0, 10])), self.clock.get());
             }
             _ => {}
         }
@@ -107,6 +132,31 @@ impl<T, const N: usize> Command<T, N> {
             .enumerate()
             .filter(|(_i, v)| v.is_some())
             .for_each(|(i, v)| f((i, v.as_ref().unwrap())))
+    }
+}
+
+pub struct Counter {
+    last: u32,
+    f_refresh: u32,
+}
+
+impl Counter {
+    fn new(f_refresh: u32) -> Self {
+        Self {
+            last: 0,
+            // In 1/ms
+            f_refresh: f_refresh / 1000,
+        }
+    }
+    fn elapsed(&mut self, ms: u32, now: u32) -> bool {
+        if now.wrapping_sub(self.last) >= ms * self.f_refresh {
+            self.last = now;
+            return true;
+        }
+        false
+    }
+    fn reset(&mut self, now: u32) {
+        self.last = now;
     }
 }
 
