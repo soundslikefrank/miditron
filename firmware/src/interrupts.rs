@@ -1,19 +1,13 @@
 #![allow(unsafe_code)]
 #![allow(non_snake_case)]
 
-use core::cell::{Cell, RefCell};
-
-use cortex_m::{
-    asm::bkpt,
-    interrupt::{free, Mutex},
-};
-use embedded_midi::MidiMessage as MM;
+use cortex_m::interrupt::free;
 use hal::{pac, stm32::interrupt};
 use rt::ExceptionFrame;
 
 use crate::drivers::PushButtons;
 use crate::midi::Midi;
-use crate::{dispatcher::Dispatcher, drivers::ButtonState};
+use crate::multi::Multi;
 
 #[interrupt]
 fn USART1() {
@@ -43,19 +37,15 @@ fn USART1() {
 #[exception]
 fn SysTick() {
     free(|cs| {
-        if let Some(d) = Dispatcher::borrow(cs).as_mut() {
-            d.clock.tick();
+        if let Some(multi) = Multi::borrow(cs).as_mut() {
+            multi.dispatcher.clock.tick();
 
             if let Some(msg) = Midi::read(cs) {
-                // TODO: We probably want to put this somehwere else? Maybe back in dispatcher?
-                match msg {
-                    MM::NoteOn(c, n, v) => d.handle_note_on(c.into(), n.into(), v.into()),
-                    MM::NoteOff(c, _n, _v) => d.handle_note_off(c.into()),
-                    _ => {}
-                }
+                multi.handle_midi_msg(msg);
             }
+
             if let Some(btn_states) = PushButtons::read_all(cs) {
-                d.handle_button_presses(btn_states);
+                multi.handle_button_presses(btn_states);
             }
         }
     })

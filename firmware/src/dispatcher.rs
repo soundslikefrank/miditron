@@ -1,18 +1,8 @@
-use cortex_m::interrupt::CriticalSection;
-
-use core::cell::{RefCell, RefMut};
-use cortex_m::interrupt::{free, Mutex};
-
-use crate::drivers::ButtonState;
 use crate::clock::Clock;
 
-mod led;
+pub mod led;
 
 use self::led::LedDispatcher;
-
-static DISPATCHER: Mutex<RefCell<Option<Dispatcher>>> = Mutex::new(RefCell::new(None));
-
-const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
 
 /* use core::fmt::Write;
 use sh::hio; */
@@ -27,14 +17,9 @@ pub struct Dispatcher {
     cvs: CvDestination,
     gates: GateDestination,
     mods: ModDestination,
-    layout: Layout,
 }
 
 impl Dispatcher {
-    pub fn init(f_refresh: u32) {
-        free(|cs| DISPATCHER.borrow(cs).replace(Some(Dispatcher::new(f_refresh))));
-    }
-
     pub fn new(f_refresh: u32) -> Self {
         // leds.dispatch(led::Action::Cycle(128, [255, 0, 10]));
         Self {
@@ -43,65 +28,36 @@ impl Dispatcher {
             cvs: Destination::new(),
             gates: Destination::new(),
             mods: Destination::new(),
-            layout: Layout::new(),
         }
     }
 
-    pub fn borrow(cs: &CriticalSection) -> RefMut<Option<Dispatcher>> {
-        DISPATCHER.borrow(cs).borrow_mut()
-    }
-
     // TODO: this isn't really great
-    pub fn get_commands(
-        cs: &CriticalSection,
-    ) -> (
+    pub fn get_commands(&mut self) -> (
         Option<Command<f32, 4>>,
         Option<Command<bool, 4>>,
         Option<Command<f32, 8>>,
         Option<Command<(u8, [u8; 3]), 4>>,
     ) {
-        if let Some(d) = DISPATCHER.borrow(cs).borrow_mut().as_mut() {
-            let now = d.clock.get();
-            // TODO: Maybe return a struct here instead of a tupel?
-            return (
-                d.cvs.next(),
-                d.gates.next(),
-                d.mods.next(),
-                d.leds.next(now),
-            );
-        }
-        (None, None, None, None)
+        let now = self.clock.get();
+        // TODO: Maybe return a struct here instead of a tupel?
+        return (
+            self.cvs.next(),
+            self.gates.next(),
+            self.mods.next(),
+            self.leds.next(now),
+        );
     }
 
-    // TODO: handle velocity (dynamic gates)
-    pub fn handle_note_on(&mut self, midi_chan: u8, midi_note: u8, _velocity: u8) -> () {
-        if let Some(chan) = self.layout.get_channel(midi_chan) {
-            self.cvs.set(chan, Self::cv_from_note(midi_note));
-            self.gates.set(chan, true);
-        }
+    pub fn set_leds(&mut self, action: led::Action) {
+        self.leds.dispatch(action, self.clock.get())
     }
 
-    pub fn handle_note_off(&mut self, midi_chan: u8) -> () {
-        if let Some(chan) = self.layout.get_channel(midi_chan) {
-            self.gates.set(chan, false);
-        }
+    pub fn set_cvs(&mut self, chan: usize, val: f32) {
+        self.cvs.set(chan, val);
     }
 
-    pub fn handle_button_presses(
-        &mut self,
-        btn_states: (ButtonState, ButtonState, ButtonState, ButtonState),
-    ) -> () {
-        match btn_states {
-            (ButtonState::Press, _, _, _) => {
-                self.leds
-                    .dispatch(led::Action::Cycle(0, (128, [255, 0, 10])), self.clock.get());
-            }
-            _ => {}
-        }
-    }
-
-    fn cv_from_note(note: u8) -> f32 {
-        note as f32 * VOLTS_PER_SEMITONE
+    pub fn set_gates(&mut self, chan: usize, val: bool) {
+        self.gates.set(chan, val);
     }
 }
 
@@ -147,24 +103,5 @@ impl<T: Copy, const N: usize> Destination<T, N> {
         let mut data: [Option<T>; N] = [None; N];
         data.copy_from_slice(&self.data);
         Some(Command(data))
-    }
-}
-
-struct Layout {
-    // FIXME: definitely not flexible enough
-    channels: [u8; 4],
-}
-
-impl Layout {
-    fn new() -> Self {
-        Self {
-            channels: [0, 2, 2, 2],
-        }
-    }
-    // FIXME: like this it is not possible to map one midi channel to two gates
-    // Also do we need to set it independently?
-    fn get_channel(&self, midi_channel: u8) -> Option<usize> {
-        // FIXME: also not really great
-        self.channels.iter().position(|c| *c == midi_channel)
     }
 }
