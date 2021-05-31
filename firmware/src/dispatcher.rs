@@ -4,6 +4,7 @@ use core::cell::{RefCell, RefMut};
 use cortex_m::interrupt::{free, Mutex};
 
 use crate::drivers::ButtonState;
+use crate::clock::Clock;
 
 mod led;
 
@@ -19,22 +20,6 @@ use sh::hio; */
 type CvDestination = Destination<f32, 4>;
 type GateDestination = Destination<bool, 4>;
 type ModDestination = Destination<f32, 8>;
-
-pub struct Clock(u32);
-
-impl Clock {
-    pub fn new() -> Self {
-        Self(0)
-    }
-
-    pub fn get(&self) -> u32 {
-        self.0
-    }
-
-    pub fn tick(&mut self) {
-        self.0 = self.0.wrapping_add(1);
-    }
-}
 
 pub struct Dispatcher {
     pub clock: Clock,
@@ -132,31 +117,6 @@ impl<T, const N: usize> Command<T, N> {
             .enumerate()
             .filter(|(_i, v)| v.is_some())
             .for_each(|(i, v)| f((i, v.as_ref().unwrap())))
-    }
-}
-
-pub struct Counter {
-    last: u32,
-    f_refresh: u32,
-}
-
-impl Counter {
-    fn new(f_refresh: u32) -> Self {
-        Self {
-            last: 0,
-            // In 1/ms
-            f_refresh: f_refresh / 1000,
-        }
-    }
-    fn elapsed(&mut self, ms: u32, now: u32) -> bool {
-        if now.wrapping_sub(self.last) >= ms * self.f_refresh {
-            self.last = now;
-            return true;
-        }
-        false
-    }
-    fn reset(&mut self, now: u32) {
-        self.last = now;
     }
 }
 

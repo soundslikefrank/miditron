@@ -13,6 +13,7 @@ extern crate stm32f4xx_hal as hal;
 
 use cortex_m::interrupt::free;
 
+mod clock;
 mod dispatcher;
 mod drivers;
 mod interrupts;

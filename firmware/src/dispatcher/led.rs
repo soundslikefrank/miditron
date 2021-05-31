@@ -18,7 +18,8 @@ impl Action {
     }
 }
 
-use super::{Command, Counter};
+use super::Command;
+use crate::clock::Counter;
 
 pub struct LedDispatcher {
     counter: Counter,
