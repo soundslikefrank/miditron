@@ -43,8 +43,8 @@ impl LedDispatcher {
         match self.state {
             Action::Idle => self.state.to_cmd(),
             Action::Cycle(idx, data) => {
-                if self.counter.elapsed(100, now) {
-                    // TODO: write abstracting for this
+                if self.counter.elapsed_ms(100, now) {
+                    // TODO: write abstraction for this (see arp)
                     let next_idx = if idx == 3 { 0 } else { idx + 1 };
                     let cmd = self.state.to_cmd();
                     self.state = Action::Cycle(next_idx, data);

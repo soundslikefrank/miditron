@@ -1,21 +1,18 @@
 use embedded_hal::digital::v2::InputPin;
+use heapless::spsc::Queue;
 use stm32f4xx_hal::gpio::{
     gpioc::{PC0, PC13, PC2, PC3},
     Input, PullDown,
 };
 
-use core::cell::RefCell;
-use cortex_m::interrupt::{free, CriticalSection, Mutex};
 use micromath::F32Ext;
 
-// FIXME: do this everywhere
 type PinA = PC13<Input<PullDown>>;
 type PinB = PC0<Input<PullDown>>;
 type PinC = PC2<Input<PullDown>>;
 type PinD = PC3<Input<PullDown>>;
 
-static PUSH_BUTTONS: Mutex<RefCell<Option<PushButtons>>> = Mutex::new(RefCell::new(None));
-
+#[derive(Copy, Clone)]
 pub enum ButtonState {
     Press,
     LongPress,
@@ -27,18 +24,12 @@ pub struct PushButtons {
     button_b: Button<PinB>,
     button_c: Button<PinC>,
     button_d: Button<PinD>,
+    state: Queue<[ButtonState; 4], 2>,
 }
 
 impl PushButtons {
     // In seconds
     const LONG_PRESS_THRESHOLD: u8 = 2;
-
-    pub fn init(pin_a: PinA, pin_b: PinB, pin_c: PinC, pin_d: PinD, f_refresh: u16) -> () {
-        free(|cs| {
-            let mut push_buttons = PUSH_BUTTONS.borrow(cs).borrow_mut();
-            *push_buttons = Some(Self::new(pin_a, pin_b, pin_c, pin_d, f_refresh));
-        });
-    }
 
     pub fn new(pin_a: PinA, pin_b: PinB, pin_c: PinC, pin_d: PinD, f_refresh: u16) -> Self {
         // threshold = x (s) / (sample_size * f_refresh (Hz))
@@ -49,25 +40,21 @@ impl PushButtons {
             button_b: Button::new(pin_b, long_press_threshold),
             button_c: Button::new(pin_c, long_press_threshold),
             button_d: Button::new(pin_d, long_press_threshold),
+            state: Queue::new(),
         }
     }
 
-    pub fn read_all(
-        cs: &CriticalSection,
-    ) -> Option<(ButtonState, ButtonState, ButtonState, ButtonState)> {
-        if let Some(push_buttons) = PUSH_BUTTONS.borrow(cs).borrow_mut().as_mut() {
-            return Some(push_buttons.read());
-        }
-        None
+    pub fn read(&mut self) -> [ButtonState; 4] {
+        self.state.dequeue().unwrap_or([ButtonState::Idle; 4])
     }
 
-    fn read(&mut self) -> (ButtonState, ButtonState, ButtonState, ButtonState) {
-        (
-            self.button_a.read(),
-            self.button_b.read(),
-            self.button_c.read(),
-            self.button_d.read(),
-        )
+    pub fn poll(&mut self) -> () {
+        self.state.enqueue([
+            self.button_a.poll(),
+            self.button_b.poll(),
+            self.button_c.poll(),
+            self.button_d.poll(),
+        ]).ok();
     }
 }
 
@@ -95,6 +82,7 @@ where
 
     fn raw_state(&self) -> u8 {
         // If pressed, button is pulled to ground
+        // TODO: adjust to actual hardware design
         if let Ok(low) = self.pin.is_low() {
             if low {
                 return 1;
@@ -105,7 +93,7 @@ where
         0
     }
 
-    pub fn read(&mut self) -> ButtonState {
+    pub fn poll(&mut self) -> ButtonState {
         // Read one byte of samples
         if self.sample_idx == 7 {
             self.sample_idx = 0;

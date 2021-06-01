@@ -1,18 +1,24 @@
-use crate::clock::Clock;
+use embedded_midi::MidiMessage as MM;
 
 pub mod led;
 
 use self::led::LedDispatcher;
-
-/* use core::fmt::Write;
-use sh::hio; */
+use crate::{drivers::ButtonState, layout::Layout};
 
 type CvDestination = Destination<f32, 4>;
 type GateDestination = Destination<bool, 4>;
 type ModDestination = Destination<f32, 8>;
 
+const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
+
+pub struct Inputs {
+    pub midi_msg: Option<MM>,
+    pub button_states: [ButtonState; 4],
+    pub now: u32,
+}
+
 pub struct Dispatcher {
-    pub clock: Clock,
+    layout: Layout,
     leds: LedDispatcher,
     cvs: CvDestination,
     gates: GateDestination,
@@ -20,10 +26,14 @@ pub struct Dispatcher {
 }
 
 impl Dispatcher {
+    fn cv_from_note(note: u8) -> f32 {
+        note as f32 * VOLTS_PER_SEMITONE
+    }
+
     pub fn new(f_refresh: u32) -> Self {
         // leds.dispatch(led::Action::Cycle(128, [255, 0, 10]));
         Self {
-            clock: Clock::new(),
+            layout: Layout::new(),
             leds: LedDispatcher::new(f_refresh),
             cvs: Destination::new(),
             gates: Destination::new(),
@@ -31,33 +41,51 @@ impl Dispatcher {
         }
     }
 
-    // TODO: this isn't really great
-    pub fn get_commands(&mut self) -> (
+    pub fn process(
+        &mut self,
+        inputs: Option<Inputs>,
+    ) -> (
         Option<Command<f32, 4>>,
         Option<Command<bool, 4>>,
         Option<Command<f32, 8>>,
         Option<Command<(u8, [u8; 3]), 4>>,
     ) {
-        let now = self.clock.get();
-        // TODO: Maybe return a struct here instead of a tupel?
-        return (
-            self.cvs.next(),
-            self.gates.next(),
-            self.mods.next(),
-            self.leds.next(now),
-        );
-    }
+        if let Some(inputs) = inputs {
+            match inputs.button_states {
+                [ButtonState::Press, _, _, _] => {
+                    self.leds
+                        // FIXME: rename this is terrible
+                        // or maybe just refactor?
+                        .dispatch(led::Action::Cycle(0, (128, [255, 0, 10])), inputs.now);
+                }
+                _ => {}
+            }
 
-    pub fn set_leds(&mut self, action: led::Action) {
-        self.leds.dispatch(action, self.clock.get())
-    }
+            if let Some(midi_msg) = inputs.midi_msg {
+                match midi_msg {
+                    MM::NoteOn(channel, note, _value) => {
+                        if let Some(chan) = self.layout.get_channel(channel.into()) {
+                            self.cvs.set(chan, Self::cv_from_note(note.into()));
+                            self.gates.set(chan, true);
+                        }
+                    }
+                    MM::NoteOff(channel, _n, _v) => {
+                        if let Some(chan) = self.layout.get_channel(channel.into()) {
+                            self.gates.set(chan, false);
+                        }
+                    }
+                    _ => {}
+                }
+            }
 
-    pub fn set_cvs(&mut self, chan: usize, val: f32) {
-        self.cvs.set(chan, val);
-    }
-
-    pub fn set_gates(&mut self, chan: usize, val: bool) {
-        self.gates.set(chan, val);
+            return (
+                self.cvs.next(),
+                self.gates.next(),
+                self.mods.next(),
+                self.leds.next(inputs.now),
+            );
+        }
+        (None, None, None, None)
     }
 }
 

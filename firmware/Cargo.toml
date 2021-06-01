@@ -20,6 +20,9 @@ micromath = "2.0.0"
 embedded-midi = "0.1.1"
 dac5578 = "0.2.1"
 dac8564 = "0.0.3"
+ranged-num = "0.1.1"
+typenum = "1.13.0"
+hash32 = "0.2.1"
 
 [dependencies.stm32f4xx-hal]
 features = ["stm32f446", "rt"]

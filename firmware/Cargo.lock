@@ -204,10 +204,13 @@ dependencies = [
  "dummy-pin",
  "embedded-hal",
  "embedded-midi",
+ "hash32",
  "heapless",
  "micromath",
  "panic-semihosting",
+ "ranged-num",
  "stm32f4xx-hal",
+ "typenum",
 ]
 
 [[package]]
@@ -283,6 +286,15 @@ name = "rand_core"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34cf66eb183df1c5876e2dcf6b13d57340741e8dc255b48e40a26de954d06ae7"
+
+[[package]]
+name = "ranged-num"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcf7bf2c15d947a6929be818d07028709138c5efebf1f8e5f64c8a381e963bfc"
+dependencies = [
+ "typenum",
+]
 
 [[package]]
 name = "rtcc"
@@ -364,6 +376,12 @@ dependencies = [
  "quote",
  "unicode-xid",
 ]
+
+[[package]]
+name = "typenum"
+version = "1.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "879f6906492a7cd215bfa4cf595b600146ccfac0c79bcbd1f3000162af5e8b06"
 
 [[package]]
 name = "unicode-xid"
