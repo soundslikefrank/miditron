@@ -1,16 +1,16 @@
 use embedded_hal::digital::v2::InputPin;
 use heapless::spsc::Queue;
 use stm32f4xx_hal::gpio::{
-    gpioc::{PC0, PC13, PC2, PC3},
+    gpioa::{PA9, PA10, PA11, PA12},
     Input, PullDown,
 };
 
 use micromath::F32Ext;
 
-type PinA = PC13<Input<PullDown>>;
-type PinB = PC0<Input<PullDown>>;
-type PinC = PC2<Input<PullDown>>;
-type PinD = PC3<Input<PullDown>>;
+type PinA = PA9<Input<PullDown>>;
+type PinB = PA10<Input<PullDown>>;
+type PinC = PA11<Input<PullDown>>;
+type PinD = PA12<Input<PullDown>>;
 
 #[derive(Copy, Clone)]
 pub enum ButtonState {

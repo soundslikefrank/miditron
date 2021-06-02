@@ -1,22 +1,25 @@
-use dac5578::{DAC5578, Channel};
+use dac5578::{Channel, DAC5578};
 use hal::rcc::Clocks;
 use hal::{
-    gpio::{gpioa::PA8, gpioc::PC9, AlternateOD, Floating, Input, AF4},
+    gpio::{
+        gpiob::{PB8, PB9},
+        AlternateOD, Floating, Input, AF4,
+    },
     i2c::I2c,
-    pac::I2C3,
+    pac::I2C1,
     prelude::*,
 };
 use micromath::F32Ext;
 
 pub struct Dac8 {
-    dac: DAC5578<I2c<I2C3, (PA8<AlternateOD<AF4>>, PC9<AlternateOD<AF4>>)>>,
+    dac: DAC5578<I2c<I2C1, (PB8<AlternateOD<AF4>>, PB9<AlternateOD<AF4>>)>>,
 }
 
 impl Dac8 {
     pub fn new(
-        i2c_port: I2C3,
-        scl_pin: PA8<Input<Floating>>,
-        sda_pin: PC9<Input<Floating>>,
+        i2c_port: I2C1,
+        scl_pin: PB8<Input<Floating>>,
+        sda_pin: PB9<Input<Floating>>,
         clocks: Clocks,
     ) -> Self {
         let scl = scl_pin
@@ -49,7 +52,7 @@ impl Dac8 {
         // y2 = 0
         // y = (0-255)/(5+5)*(x+5)+255
         static V_MAX: f32 = 255_f32;
-        static M: f32 = -V_MAX/10_f32;
+        static M: f32 = -V_MAX / 10_f32;
         static C: f32 = M * 5_f32 + V_MAX;
 
         let val = (M * voltage + C).round() as u8;

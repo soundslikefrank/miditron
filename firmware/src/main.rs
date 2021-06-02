@@ -39,7 +39,7 @@ fn main() -> ! {
     let Hertz(f_cpu) = F_CPU.into();
     let Hertz(f_systick) = F_SYSTICK.into();
 
-    let (d_midi_input, d_push_buttons, mut d_dac4, mut d_dac8, mut d_gates, mut d_leds, _d_ld2) =
+    let (d_midi_input, d_push_buttons, mut d_dac4, mut d_dac8, mut d_gates, mut d_leds) =
         drivers::setup(f_cpu, f_systick);
 
     let mut dispatcher = Dispatcher::new(f_systick);

@@ -7,9 +7,7 @@ use hal::{
     stm32,
 };
 use stm32f4xx_hal::gpio::{
-    gpioa::PA5,
-    gpiob::PB15,
-    gpioc::{PC6, PC7, PC8},
+    gpioc::{PC6, PC7, PC8, PC9},
     Output, PushPull,
 };
 
@@ -35,13 +33,12 @@ type Drivers = (
     Dac8,
     // TODO: this is a bit weird, can we make it better?
     Gates<
-        PB15<Output<PushPull>>,
         PC6<Output<PushPull>>,
         PC7<Output<PushPull>>,
         PC8<Output<PushPull>>,
+        PC9<Output<PushPull>>,
     >,
     Leds,
-    PA5<Output<PushPull>>,
 );
 
 pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
@@ -59,39 +56,36 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
     let clocks = set_clocks(rcc, f_cpu, f_systick, &mut syst);
 
     // Initialize UART midi input
-    let midi_input = MidiInput::new(dp.USART1, gpioa.pa10, clocks);
+    let midi_input = MidiInput::new(dp.USART1, gpiob.pb7, clocks);
 
     // Initialize push buttons input
     let push_buttons = PushButtons::new(
-        gpioc.pc13.into_pull_down_input(),
-        gpioc.pc0.into_pull_down_input(),
-        gpioc.pc2.into_pull_down_input(),
-        gpioc.pc3.into_pull_down_input(),
+        gpioa.pa9.into_pull_down_input(),
+        gpioa.pa10.into_pull_down_input(),
+        gpioa.pa11.into_pull_down_input(),
+        gpioa.pa12.into_pull_down_input(),
         f_systick as u16,
     );
 
     // Initialize DAC8564
-    let dac4 = Dac4::new(dp.SPI2, gpiob.pb13, gpioc.pc1, gpiob.pb12, clocks);
+    let dac4 = Dac4::new(dp.SPI2, gpiob.pb13, gpioc.pc3, gpiob.pb12, clocks);
 
     // Initialize DAC5578
-    let dac8 = Dac8::new(dp.I2C3, gpioa.pa8, gpioc.pc9, clocks);
+    let dac8 = Dac8::new(dp.I2C1, gpiob.pb8, gpiob.pb9, clocks);
 
     let gates = Gates::new(
-        gpiob.pb15.into_push_pull_output(),
         gpioc.pc6.into_push_pull_output(),
         gpioc.pc7.into_push_pull_output(),
         gpioc.pc8.into_push_pull_output(),
+        gpioc.pc9.into_push_pull_output(),
     );
 
     // Initialize LEDs
-    let mut leds = Leds::new(dp.I2C2, gpiob.pb10, gpioc.pc12, clocks);
+    let mut leds = Leds::new(dp.I2C2, gpiob.pb10, gpiob.pb11, clocks);
     leds.reset();
     leds.enable();
 
-    // TODO: remove, we don't need this
-    let ld2 = gpioa.pa5.into_push_pull_output();
-
-    return (midi_input, push_buttons, dac4, dac8, gates, leds, ld2);
+    return (midi_input, push_buttons, dac4, dac8, gates, leds);
 }
 
 fn set_clocks(rcc: Rcc, f_cpu: u32, f_systick: u32, syst: &mut SYST) -> Clocks {

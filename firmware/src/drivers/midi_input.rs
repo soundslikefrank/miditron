@@ -1,7 +1,7 @@
 use cortex_m::peripheral::NVIC;
 use embedded_midi::{MidiMessage, MidiParser};
 use hal::{
-    gpio::{gpioa::PA10, Floating, Input},
+    gpio::{gpiob::PB7, Floating, Input},
     pac::USART1,
     prelude::*,
     rcc::Clocks,
@@ -19,7 +19,7 @@ pub struct MidiInput {
 }
 
 impl MidiInput {
-    pub fn new(usart: USART1, rx_pin: PA10<Input<Floating>>, clocks: Clocks) -> Self {
+    pub fn new(usart: USART1, rx_pin: PB7<Input<Floating>>, clocks: Clocks) -> Self {
         let rx = rx_pin.into_alternate_af7();
 
         if let Ok(mut serial) = Serial::usart1(
