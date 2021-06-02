@@ -11,11 +11,7 @@ type ModDestination = Destination<f32, 8>;
 
 const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
 
-pub struct Inputs {
-    pub midi_msg: Option<MM>,
-    pub button_states: [ButtonState; 4],
-    pub now: u32,
-}
+type Inputs = ([ButtonState; 4], Option<MM>, u32);
 
 pub struct Dispatcher {
     layout: Layout,
@@ -50,42 +46,51 @@ impl Dispatcher {
         Option<Command<f32, 8>>,
         Option<Command<(u8, [u8; 3]), 4>>,
     ) {
-        if let Some(inputs) = inputs {
-            match inputs.button_states {
-                [ButtonState::Press, _, _, _] => {
-                    self.leds
-                        // FIXME: rename this is terrible
-                        // or maybe just refactor?
-                        .dispatch(led::Action::Cycle(0, (128, [255, 0, 10])), inputs.now);
-                }
-                _ => {}
-            }
-
-            if let Some(midi_msg) = inputs.midi_msg {
-                match midi_msg {
-                    MM::NoteOn(channel, note, _value) => {
-                        if let Some(chan) = self.layout.get_channel(channel.into()) {
-                            self.cvs.set(chan, Self::cv_from_note(note.into()));
-                            self.gates.set(chan, true);
-                        }
-                    }
-                    MM::NoteOff(channel, _n, _v) => {
-                        if let Some(chan) = self.layout.get_channel(channel.into()) {
-                            self.gates.set(chan, false);
-                        }
-                    }
-                    _ => {}
-                }
-            }
+        // FIXME: It seems inputs needs to be a tuple, then all the functions can just consume the
+        // individual parts
+        if let Some((button_states, midi_msg, now)) = inputs {
+            self.handle_button_presses(button_states, now);
+            self.handle_midi_message(midi_msg, now);
 
             return (
                 self.cvs.next(),
                 self.gates.next(),
                 self.mods.next(),
-                self.leds.next(inputs.now),
+                self.leds.next(now),
             );
         }
         (None, None, None, None)
+    }
+
+    fn handle_button_presses(&mut self, button_states: [ButtonState; 4], now: u32) {
+        match button_states {
+            [ButtonState::Idle, ButtonState::Idle, ButtonState::Idle, ButtonState::Idle] => {}
+            [ButtonState::Press, _, _, _] => {
+                self.leds
+                    // We might want to use short-hand methods for things like this
+                    .set(led::Action::Cycle(0, (128, [255, 0, 10])), now);
+            }
+            _ => {}
+        }
+    }
+
+    fn handle_midi_message(&mut self, midi_msg: Option<MM>, _now: u32) {
+        if let Some(midi_msg) = midi_msg {
+            match midi_msg {
+                MM::NoteOn(channel, note, _value) => {
+                    if let Some(chan) = self.layout.get_channel(channel.into()) {
+                        self.cvs.set(chan, Self::cv_from_note(note.into()));
+                        self.gates.set(chan, true);
+                    }
+                }
+                MM::NoteOff(channel, _n, _v) => {
+                    if let Some(chan) = self.layout.get_channel(channel.into()) {
+                        self.gates.set(chan, false);
+                    }
+                }
+                _ => {}
+            }
+        }
     }
 }
 
@@ -110,9 +115,6 @@ struct Destination<T, const N: usize> {
 }
 
 impl<T: Copy, const N: usize> Destination<T, N> {
-    // TODO: this will be more complex as the data might not be an on/off kind of thing
-    // Use this to implement triggers/ envelopes/etc
-    // IDEA: use iterators??
     pub fn new() -> Self {
         Self {
             data: [None; N],

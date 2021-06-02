@@ -21,6 +21,7 @@ impl Action {
 use super::Command;
 use crate::clock::Counter;
 
+// FIXME rename
 pub struct LedDispatcher {
     counter: Counter,
     state: Action,
@@ -34,7 +35,7 @@ impl LedDispatcher {
         }
     }
 
-    pub fn dispatch(&mut self, action: Action, now: u32) {
+    pub fn set(&mut self, action: Action, now: u32) {
         self.counter.reset(now);
         self.state = action;
     }

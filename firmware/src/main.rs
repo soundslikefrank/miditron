@@ -12,7 +12,7 @@ extern crate panic_semihosting;
 extern crate stm32f4xx_hal as hal;
 
 use cortex_m::interrupt::free;
-use dispatcher::{Dispatcher, Inputs};
+use dispatcher::Dispatcher;
 use hal::time::{Hertz, KiloHertz, MegaHertz};
 
 mod arp;
@@ -53,11 +53,7 @@ fn main() -> ! {
                 let midi_msg = res.midi_input.read();
                 let now = res.clock.get();
                 // TODO: add arp output
-                return Some(Inputs {
-                    button_states,
-                    midi_msg,
-                    now,
-                });
+                return Some((button_states, midi_msg, now));
             }
             None
         });
