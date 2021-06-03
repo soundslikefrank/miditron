@@ -22,6 +22,7 @@ mod drivers;
 mod interrupts;
 mod layout;
 mod resources;
+mod utils;
 
 use resources::Resources;
 
