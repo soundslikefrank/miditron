@@ -15,12 +15,13 @@ use stm32f4xx_hal::gpio::{
 
 mod dac4;
 mod dac8;
+mod eeprom;
 mod gates;
 mod leds;
 mod midi_input;
 mod push_buttons;
 
-use self::dac4::Dac4;
+use self::{dac4::Dac4, eeprom::Eeprom};
 use self::dac8::Dac8;
 use self::gates::Gates;
 use self::leds::Leds;
@@ -75,6 +76,8 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
 
     // Initialize DAC5578
     let dac8 = Dac8::new(dp.I2C3, gpioa.pa8, gpioc.pc9, clocks);
+
+    let eeprom = Eeprom::new(dp.I2C1, gpiob.pb6, gpiob.pb7, clocks);
 
     let gates = Gates::new(
         gpiob.pb15.into_push_pull_output(),

@@ -23,6 +23,7 @@
     -> Per channel modulation (see above)
     -> Send Controller Change messages (one row is one channel)
     -> Send velocity sensitive gates/triggers (per channel)
+    -> Mode where you can use all 8 mod sources for one channel
 
 * Per channel features
   - Learn

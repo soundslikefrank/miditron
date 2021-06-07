@@ -30,7 +30,7 @@
 
 ### Memory
 
-* AT24C256C-SSHL-T 256kbit EEPROM
+* M24C64-F 64kbit EEPROM
 
 ## PCB layout notes
 
