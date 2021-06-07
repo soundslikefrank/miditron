@@ -1,14 +1,14 @@
 use embedded_hal::digital::v2::InputPin;
 use heapless::spsc::Queue;
 use stm32f4xx_hal::gpio::{
-    gpioc::{PC0, PC13, PC2, PC3},
+    gpioc::{PC0, PC1, PC2, PC3},
     Input, PullDown,
 };
 
 use micromath::F32Ext;
 
-type PinA = PC13<Input<PullDown>>;
-type PinB = PC0<Input<PullDown>>;
+type PinA = PC0<Input<PullDown>>;
+type PinB = PC1<Input<PullDown>>;
 type PinC = PC2<Input<PullDown>>;
 type PinD = PC3<Input<PullDown>>;
 

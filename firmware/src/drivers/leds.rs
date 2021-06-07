@@ -1,5 +1,8 @@
 use stm32f4xx_hal::{
-    gpio::{gpiob::PB10, gpioc::PC12, AlternateOD, Floating, Input, AF4},
+    gpio::{
+        gpiob::{PB10, PB3},
+        AlternateOD, Floating, Input, AF4, AF9,
+    },
     i2c::I2c,
     pac::I2C2,
     prelude::*,
@@ -9,14 +12,14 @@ use stm32f4xx_hal::{
 pub struct Leds {
     address: u8,
     // TODO: replace this with the driver for the LP5012
-    i2c: I2c<I2C2, (PB10<AlternateOD<AF4>>, PC12<AlternateOD<AF4>>)>,
+    i2c: I2c<I2C2, (PB10<AlternateOD<AF4>>, PB3<AlternateOD<AF9>>)>,
 }
 
 impl Leds {
     pub fn new(
         i2c_port: I2C2,
         scl_pin: PB10<Input<Floating>>,
-        sda_pin: PC12<Input<Floating>>,
+        sda_pin: PB3<Input<Floating>>,
         clocks: Clocks,
     ) -> Self {
         let scl = scl_pin
@@ -24,7 +27,7 @@ impl Leds {
             .internal_pull_up(true)
             .set_open_drain();
         let sda = sda_pin
-            .into_alternate_af4()
+            .into_alternate_af9()
             .internal_pull_up(true)
             .set_open_drain();
 
@@ -46,7 +49,9 @@ impl Leds {
     pub fn set(&mut self, channel: u8, (brightness, [r, g, b]): (u8, [u8; 3])) {
         let bright_addr = 0x7 + channel as u8;
         let color_addr = 0xb + (channel as u8) * 3;
-        self.i2c.write(self.address, &[bright_addr, brightness]).ok();
+        self.i2c
+            .write(self.address, &[bright_addr, brightness])
+            .ok();
         self.i2c.write(self.address, &[color_addr, r, g, b]).ok();
     }
 }
