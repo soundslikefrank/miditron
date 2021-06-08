@@ -10,6 +10,7 @@ type GateDestination = Destination<bool, 4>;
 type ModDestination = Destination<f32, 8>;
 
 const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
+const VOLTS_PER_VELOCITY: f32 = 5_f32 / 127_f32;
 
 type Inputs = ([ButtonState; 4], Option<MM>, u32);
 
@@ -24,6 +25,10 @@ pub struct Dispatcher {
 impl Dispatcher {
     fn cv_from_note(note: u8) -> f32 {
         note as f32 * VOLTS_PER_SEMITONE
+    }
+
+    fn cv_from_velocity(velo: u8) -> f32 {
+        velo as f32 * VOLTS_PER_VELOCITY
     }
 
     pub fn new(f_refresh: u32) -> Self {
@@ -77,15 +82,17 @@ impl Dispatcher {
     fn handle_midi_message(&mut self, midi_msg: Option<MM>, _now: u32) {
         if let Some(midi_msg) = midi_msg {
             match midi_msg {
-                MM::NoteOn(channel, note, _value) => {
+                MM::NoteOn(channel, note, velocity) => {
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
                         self.cvs.set(chan, Self::cv_from_note(note.into()));
                         self.gates.set(chan, true);
+                        self.mods.set(chan, Self::cv_from_velocity(velocity.into()));
                     }
                 }
                 MM::NoteOff(channel, _n, _v) => {
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
                         self.gates.set(chan, false);
+                        self.mods.set(chan, 0.0);
                     }
                 }
                 _ => {}
