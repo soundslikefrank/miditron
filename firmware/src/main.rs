@@ -54,7 +54,15 @@ fn main() -> ! {
 
     free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
 
+    let mut c = 0;
+
     loop {
+        if c == 0 {
+            _eeprom.store_page(0, &[6, 6, 6]);
+            c = 1;
+        }
+
+
         let inputs = free(|cs| {
             if let Some(res) = Resources::borrow(cs).as_mut() {
                 let button_states = res.push_buttons.read();
