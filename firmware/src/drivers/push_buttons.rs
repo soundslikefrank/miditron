@@ -2,15 +2,15 @@ use embedded_hal::digital::v2::InputPin;
 use heapless::spsc::Queue;
 use stm32f4xx_hal::gpio::{
     gpioc::{PC0, PC1, PC2, PC3},
-    Input, PullDown,
+    Input, PullUp,
 };
 
 use micromath::F32Ext;
 
-type PinA = PC0<Input<PullDown>>;
-type PinB = PC1<Input<PullDown>>;
-type PinC = PC2<Input<PullDown>>;
-type PinD = PC3<Input<PullDown>>;
+type PinA = PC0<Input<PullUp>>;
+type PinB = PC1<Input<PullUp>>;
+type PinC = PC2<Input<PullUp>>;
+type PinD = PC3<Input<PullUp>>;
 
 #[derive(Copy, Clone)]
 pub enum ButtonState {
@@ -49,12 +49,14 @@ impl PushButtons {
     }
 
     pub fn poll(&mut self) -> () {
-        self.state.enqueue([
-            self.button_a.poll(),
-            self.button_b.poll(),
-            self.button_c.poll(),
-            self.button_d.poll(),
-        ]).ok();
+        self.state
+            .enqueue([
+                self.button_a.poll(),
+                self.button_b.poll(),
+                self.button_c.poll(),
+                self.button_d.poll(),
+            ])
+            .ok();
     }
 }
 
@@ -82,7 +84,6 @@ where
 
     fn raw_state(&self) -> u8 {
         // If pressed, button is pulled to ground
-        // TODO: adjust to actual hardware design
         if let Ok(low) = self.pin.is_low() {
             if low {
                 return 1;

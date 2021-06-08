@@ -7,7 +7,6 @@ use hal::{
     stm32,
 };
 use stm32f4xx_hal::gpio::{
-    gpioa::PA5,
     gpiob::{PB12, PB13, PB14, PB15},
     Output, PushPull,
 };
@@ -63,10 +62,10 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
 
     // Initialize push buttons input
     let push_buttons = PushButtons::new(
-        gpioc.pc0.into_pull_down_input(),
-        gpioc.pc1.into_pull_down_input(),
-        gpioc.pc2.into_pull_down_input(),
-        gpioc.pc3.into_pull_down_input(),
+        gpioc.pc0.into_pull_up_input(),
+        gpioc.pc1.into_pull_up_input(),
+        gpioc.pc2.into_pull_up_input(),
+        gpioc.pc3.into_pull_up_input(),
         f_systick as u16,
     );
 
