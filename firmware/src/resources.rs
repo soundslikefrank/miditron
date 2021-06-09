@@ -11,6 +11,7 @@ pub struct Resources {
     pub clock: Clock,
     pub midi_input: MidiInput,
     pub push_buttons: PushButtons,
+    calibrate: bool,
 }
 
 impl Resources {
@@ -19,14 +20,11 @@ impl Resources {
             clock: Clock::new(),
             midi_input,
             push_buttons,
+            calibrate: false,
         }
     }
 
-    pub fn init(
-        cs: &CriticalSection,
-        push_buttons: PushButtons,
-        midi_input: MidiInput,
-    ) {
+    pub fn init(cs: &CriticalSection, push_buttons: PushButtons, midi_input: MidiInput) {
         RESOURCES
             .borrow(cs)
             .replace(Some(Resources::new(push_buttons, midi_input)));
@@ -34,5 +32,19 @@ impl Resources {
 
     pub fn borrow(cs: &CriticalSection) -> RefMut<Option<Self>> {
         RESOURCES.borrow(cs).borrow_mut()
+    }
+
+    // TODO: consider to put this all into one module (Calibrator?)
+    pub fn set_calibrate(&mut self) {
+        self.calibrate = true;
+    }
+
+    // Calibration can just be true once
+    pub fn read_calibrate(&mut self) -> bool {
+        if self.calibrate {
+            self.calibrate = false;
+            return true;
+        }
+        false
     }
 }

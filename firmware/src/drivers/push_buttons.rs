@@ -48,6 +48,15 @@ impl PushButtons {
         self.state.dequeue().unwrap_or([ButtonState::Idle; 4])
     }
 
+    pub fn read_raw(&mut self) -> [u8; 4] {
+        [
+            self.button_a.raw_state(),
+            self.button_b.raw_state(),
+            self.button_c.raw_state(),
+            self.button_d.raw_state(),
+        ]
+    }
+
     pub fn poll(&mut self) -> () {
         self.state
             .enqueue([

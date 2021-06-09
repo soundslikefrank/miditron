@@ -12,7 +12,7 @@ type ModDestination = Destination<f32, 8>;
 const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
 const VOLTS_PER_VELOCITY: f32 = 5_f32 / 127_f32;
 
-type Inputs = ([ButtonState; 4], Option<MM>, u32);
+type Inputs = ([ButtonState; 4], Option<MM>, u32, bool);
 
 pub struct Dispatcher {
     layout: Layout,
@@ -51,9 +51,13 @@ impl Dispatcher {
         Option<Command<f32, 8>>,
         Option<Command<(u8, [u8; 3]), 4>>,
     ) {
-        // FIXME: It seems inputs needs to be a tuple, then all the functions can just consume the
-        // individual parts
-        if let Some((button_states, midi_msg, now)) = inputs {
+        if let Some((button_states, midi_msg, now, is_calibrating)) = inputs {
+            // TODO: consider to put this all into one module (Calibrator?)
+            if is_calibrating {
+                self.leds
+                    .set(led::Action::Cycle(0, (128, [0, 255, 10])), now);
+            }
+
             self.handle_button_presses(button_states, now);
             self.handle_midi_message(midi_msg, now);
 
@@ -70,11 +74,7 @@ impl Dispatcher {
     fn handle_button_presses(&mut self, button_states: [ButtonState; 4], now: u32) {
         match button_states {
             [ButtonState::Idle, ButtonState::Idle, ButtonState::Idle, ButtonState::Idle] => {}
-            [ButtonState::Press, _, _, _] => {
-                self.leds
-                    // We might want to use short-hand methods for things like this
-                    .set(led::Action::Cycle(0, (128, [255, 0, 10])), now);
-            }
+            [ButtonState::Press, _, _, _] => {}
             _ => {}
         }
     }

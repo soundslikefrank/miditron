@@ -52,20 +52,28 @@ fn main() -> ! {
 
     let mut dispatcher = Dispatcher::new(f_systick);
 
-    free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
+    free(|cs| {
+        Resources::init(cs, d_push_buttons, d_midi_input);
+        if let Some(res) = Resources::borrow(cs).as_mut() {
+            // TODO: use the left and rightmost buttons
+            if let [1, 1, _, _] = res.push_buttons.read_raw() {
+                res.set_calibrate();
+            }
+        }
+    });
 
-    let mut c = 0;
+    // let mut c = 0;
 
     loop {
-        if c == 0 {
-            // _eeprom.store_page(0, &[6, 6, 6]);
+        /* if c == 0 {
+            _eeprom.store_page(0, &[6, 6, 6]);
             c = 1;
         }
 
         if c == 1 {
             let x = _eeprom.read_page(0);
             c = 2;
-        }
+        } */
 
         let inputs = free(|cs| {
             if let Some(res) = Resources::borrow(cs).as_mut() {
@@ -73,7 +81,7 @@ fn main() -> ! {
                 let midi_msg = res.midi_input.read();
                 let now = res.clock.get();
                 // TODO: add arp output
-                return Some((button_states, midi_msg, now));
+                return Some((button_states, midi_msg, now, res.read_calibrate()));
             }
             None
         });
