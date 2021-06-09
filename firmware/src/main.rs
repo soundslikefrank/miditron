@@ -58,10 +58,14 @@ fn main() -> ! {
 
     loop {
         if c == 0 {
-            _eeprom.store_page(0, &[6, 6, 6]);
+            // _eeprom.store_page(0, &[6, 6, 6]);
             c = 1;
         }
 
+        if c == 1 {
+            let x = _eeprom.read_page(0);
+            c = 2;
+        }
 
         let inputs = free(|cs| {
             if let Some(res) = Resources::borrow(cs).as_mut() {

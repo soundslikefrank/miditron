@@ -38,7 +38,7 @@ impl Eeprom {
         }
     }
 
-    pub fn store_page<const N: usize>(&mut self, page_number: u8, data: &[u8; N]) {
+    pub fn store_page(&mut self, page_number: u8, data: &[u8]) {
         // A page is 32 bytes, we have 250 pages
         let mem_addr = 32 * page_number as u16;
         let mem_addr = [(mem_addr >> 8) as u8, (mem_addr & 0xff) as u8];
@@ -47,5 +47,14 @@ impl Eeprom {
         self.page_buffer.extend_from_slice(&mem_addr).ok();
         self.page_buffer.extend_from_slice(data).ok();
         self.i2c.write(ADDRESS, &self.page_buffer).ok();
+    }
+
+    pub fn read_page (&mut self, page_number: u8) -> [u8; 32] {
+        let mem_addr = 32 * page_number as u16;
+        let mem_addr = [(mem_addr >> 8) as u8, (mem_addr & 0xff) as u8];
+        let mut buf: [u8; 32] = [0; 32];
+        // FIXME: do we want to handle errors?
+        self.i2c.write_read(ADDRESS, &mem_addr, &mut buf).ok();
+        buf
     }
 }
