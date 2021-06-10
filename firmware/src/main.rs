@@ -52,15 +52,7 @@ fn main() -> ! {
 
     let mut dispatcher = Dispatcher::new(f_systick);
 
-    free(|cs| {
-        Resources::init(cs, d_push_buttons, d_midi_input);
-        if let Some(res) = Resources::borrow(cs).as_mut() {
-            // TODO: use the left and rightmost buttons
-            if let [1, 1, _, _] = res.push_buttons.read_raw() {
-                res.set_calibrate();
-            }
-        }
-    });
+    free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
 
     // let mut c = 0;
 
@@ -81,7 +73,7 @@ fn main() -> ! {
                 let midi_msg = res.midi_input.read();
                 let now = res.clock.get();
                 // TODO: add arp output
-                return Some((button_states, midi_msg, now, res.read_calibrate()));
+                return Some((button_states, midi_msg, now));
             }
             None
         });

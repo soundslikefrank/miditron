@@ -67,6 +67,7 @@ impl Dac4 {
     }
 
     pub fn set_voltage(&mut self, channel: u8, voltage: f32) -> () {
+        // We _could_ also account for the fact that it is -5.2 to 8.4 and not -5 to 8
         // TODO: include calibration data somehow
         // Use calibration data in dac initialization (new())
         // x1 = -5
