@@ -1,4 +1,4 @@
-use core::array::IntoIter;
+use core::{array::IntoIter, convert::TryInto};
 use heapless::Vec;
 
 use super::{led, ButtonState as B, CvDestination, LedDispatcher, ModDestination};
@@ -17,13 +17,13 @@ enum Target {
     End,
 }
 
-pub struct Result {
+pub struct CalibrationResult {
     // TODO: Replace `1`s with 4 and 8 respectively
-    dac4: [[f32; 3]; 1],
-    dac8: [[f32; 3]; 1],
+    pub dac4: [[f32; 3]; 1],
+    pub dac8: [[f32; 3]; 1],
 }
 
-impl Result {
+impl CalibrationResult {
     // TODO: Replace `1`s with 4 and 8 respectively
     fn from_points(dac4_points: [[f32; 14]; 1], dac8_points: [[f32; 11]; 1]) -> Self {
         let mut dac4 = [[0.0; 3]; 1];
@@ -34,6 +34,30 @@ impl Result {
         for (i, chan) in dac8_points.iter().enumerate() {
             dac8[i] = quad_reg(&DAC8_VOLTAGES, chan);
         }
+        Self { dac4, dac8 }
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        // TODO: Acually 4*3*4 + 4*3*8 bytes = 144
+        // Slice needs to be 24/144 bytes long!!!
+        if bytes.len() != 24 {
+            panic!("Should be a 24 bytes slice");
+        }
+        let mut dac4 = [[0.0; 3]; 1];
+        let mut dac8 = [[0.0; 3]; 1];
+
+        let dac4_bytes = &bytes[0..12];
+        let dac8_bytes = &bytes[12..24];
+
+        // TODO: we would loop through all the channels here
+        for (dest, src) in dac4[0].iter_mut().zip(dac4_bytes.chunks_exact(4)) {
+            *dest = f32::from_ne_bytes(src.try_into().unwrap());
+        }
+
+        for (dest, src) in dac8[0].iter_mut().zip(dac8_bytes.chunks_exact(4)) {
+            *dest = f32::from_ne_bytes(src.try_into().unwrap());
+        }
+
         Self { dac4, dac8 }
     }
 
@@ -56,6 +80,8 @@ impl Result {
                 .iter()
                 .flat_map(|x| x.iter().flat_map(|x| IntoIter::new(x.to_ne_bytes()))),
         );
+        /* let mut res: [u8; 24] = [0; 24];
+        res.copy_from_slice(&vec); */
         vec
     }
 }
@@ -83,7 +109,7 @@ impl Calibrator {
         cvs: &mut CvDestination,
         mods: &mut ModDestination,
         leds: &mut LedDispatcher,
-    ) -> Option<Result> {
+    ) -> Option<CalibrationResult> {
         if let Target::Start = self.target {
             self.advance(leds, now);
             self.calibrate(0.0, cvs, mods);
@@ -91,7 +117,7 @@ impl Calibrator {
         }
         if let Target::End = self.target {
             // TODO: This is for one channel only for now
-            let result = Result::from_points([self.dac4_data[0]], [self.dac8_data[0]]);
+            let result = CalibrationResult::from_points([self.dac4_data[0]], [self.dac8_data[0]]);
             return Some(result);
         }
         match button_states {
@@ -175,9 +201,11 @@ impl Calibrator {
                     // TODO: this is just for the first channel of Dac8
                     // Remove the following code
                     self.target = Target::End;
+                    leds.set(led::Action::Stop, now);
                     // And uncomment this
                     /* if chan == 7 {
                         self.target = Target::End;
+                        leds.set(led::Action::Stop, now);
                     } else {
                         leds.set(
                             led::Action::BlinkOneFast(true, (chan + 1) % 4, led::GREEN),

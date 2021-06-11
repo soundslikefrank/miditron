@@ -47,23 +47,26 @@ fn main() -> ! {
         mut d_dac8,
         mut d_gates,
         mut d_leds,
-        mut _eeprom,
+        mut d_eeprom,
     ) = drivers::setup(f_cpu, f_systick);
 
-    let mut dispatcher = Dispatcher::new(f_systick);
+    // FIXME: What if the page is full with ones?
+    let res = d_eeprom.read_page(0);
+    let mut dispatcher = Dispatcher::new(f_systick, &res[0..24]);
 
     free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
 
-    // let mut c = 0;
+    // let mut c = 1;
 
     loop {
         /* if c == 0 {
             _eeprom.store_page(0, &[6, 6, 6]);
             c = 1;
-        }
+        } */
 
-        if c == 1 {
-            let x = _eeprom.read_page(0);
+        /* if c == 1 {
+            let res = d_eeprom.read_page(0);
+            let x = CalibrationResult::from_bytes(&res[0..24]);
             c = 2;
         } */
 
@@ -78,7 +81,7 @@ fn main() -> ! {
             None
         });
 
-        let (cvs, gates, mods, leds) = dispatcher.process(inputs);
+        let (cvs, gates, mods, leds, eeprom) = dispatcher.process(inputs);
 
         if let Some(cvs) = cvs {
             cvs.for_each(|(i, &v)| d_dac4.set_voltage(i as u8, v));
@@ -92,6 +95,9 @@ fn main() -> ! {
         }
         if let Some(leds) = leds {
             leds.for_each(|(i, &v)| d_leds.set(i as u8, v));
+        }
+        if let Some((page, data)) = eeprom {
+            d_eeprom.store_page(page, &data);
         }
     }
 }
