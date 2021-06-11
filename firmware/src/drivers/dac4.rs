@@ -67,17 +67,16 @@ impl Dac4 {
     }
 
     pub fn set_voltage(&mut self, channel: u8, voltage: f32) -> () {
-        // We _could_ also account for the fact that it is -5.2 to 8.4 and not -5 to 8
         // TODO: include calibration data somehow
         // Use calibration data in dac initialization (new())
-        // x1 = -5
-        // x2 = 8
+        // x1 = -5.2
+        // x2 = 8.4
         // y1 = 65535
         // y2 = 0
-        // y = (0-65535)/(8+5)*(x+5)+65535
+        // y = (0-65535)/(8.4+5.2)*(x+5.2)+65535
         static V_MAX: f32 = 65535_f32;
-        static M: f32 = -V_MAX/13_f32;
-        static C: f32 = M * 5_f32 + V_MAX;
+        static M: f32 = -V_MAX/13.6;
+        static C: f32 = M * 5.2 + V_MAX;
 
         let val = (M * voltage + C).round() as u16;
         self.dac.write(Channel::from_index(channel), val).ok();
