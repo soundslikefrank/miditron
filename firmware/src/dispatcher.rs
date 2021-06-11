@@ -95,8 +95,7 @@ impl Dispatcher {
     fn handle_button_presses(&mut self, button_states: [ButtonState; 4], _now: u32) {
         match button_states {
             [ButtonState::Idle, ButtonState::Idle, ButtonState::Idle, ButtonState::Idle] => {}
-            // TODO: make these the outmost buttons
-            [ButtonState::LongPress, ButtonState::LongPress, _, _] => {
+            [ButtonState::LongPress, _, _, ButtonState::LongPress] => {
                 self.state = State::Calibration;
             }
             _ => {}

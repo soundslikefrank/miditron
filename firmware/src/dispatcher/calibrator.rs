@@ -32,21 +32,29 @@ impl Calibrator {
         mods: &mut ModDestination,
         leds: &mut LedDispatcher,
     ) -> bool {
-        match (self.target, button_states) {
-            (Target::Start, _) => {
-                leds.set(led::Action::Cycle(0, (128, [0, 255, 10])), now);
+        if let Target::Start = self.target {
+            leds.set(led::Action::Cycle(0, (128, [0, 255, 10])), now);
+            self.advance();
+            self.calibrate(0.0, cvs, mods);
+            // TODO return something proper here
+            return false;
+        }
+        match button_states {
+            [_, B::Press, B::Press, _] => {
                 self.advance();
                 self.calibrate(0.0, cvs, mods);
             }
-            (_, [B::Press, B::Press, _, _]) => {
-                self.advance();
-                self.calibrate(0.0, cvs, mods);
+            [_, _, _, B::Press] => {
+                self.calibrate(0.005, cvs, mods);
             }
-            (_, [_, B::Press, _, _]) => {
-                self.calibrate(0.01, cvs, mods);
+            [B::Press, _, _, _] => {
+                self.calibrate(-0.005, cvs, mods);
             }
-            (_, [B::Press, _, _, _]) => {
-                self.calibrate(-0.01, cvs, mods);
+            [_, _, B::Press, _] => {
+                self.calibrate(0.0002, cvs, mods);
+            }
+            [_, B::Press, _, _] => {
+                self.calibrate(-0.0002, cvs, mods);
             }
             _ => {}
         }
