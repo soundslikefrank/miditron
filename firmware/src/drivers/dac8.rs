@@ -43,14 +43,14 @@ impl Dac8 {
     pub fn set_voltage(&mut self, channel: u8, voltage: f32) -> () {
         // TODO: include calibration data somehow
         // Use calibration data in dac initialization (new())
-        // x1 = -5
-        // x2 = 5
+        // x1 = -5.2
+        // x2 = 5.2
         // y1 = 255
         // y2 = 0
-        // y = (0-255)/(5+5)*(x+5)+255
+        // y = (0-255)/(5.2+5.2)*(x+5.2)+255
         static V_MAX: f32 = 255_f32;
-        static M: f32 = -V_MAX/10_f32;
-        static C: f32 = M * 5_f32 + V_MAX;
+        static M: f32 = -V_MAX/10.4;
+        static C: f32 = M * 5.2 + V_MAX;
 
         let val = (M * voltage + C).round() as u8;
         self.dac.write(Channel::from(channel), val).ok();
