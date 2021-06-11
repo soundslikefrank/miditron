@@ -1,10 +1,10 @@
 use embedded_midi::MidiMessage as MM;
 
-pub mod led;
 mod calibrator;
+pub mod led;
 
-use self::led::LedDispatcher;
 use self::calibrator::Calibrator;
+use self::led::LedDispatcher;
 use crate::{drivers::ButtonState, layout::Layout};
 
 type CvDestination = Destination<f32, 4>;
@@ -69,13 +69,17 @@ impl Dispatcher {
                     // if let Some(values) = self.calibrator.process(...) {
                     //  // advance state, store to eeprom
                     // }
-                    let _is_done = self.calibrator.process(
+                    if let Some(result) = self.calibrator.process(
                         button_states,
                         now,
                         &mut self.cvs,
                         &mut self.mods,
                         &mut self.leds,
-                    );
+                    ) {
+                        let x = result.to_bytes();
+                        let y = x.as_slice();
+                        let _z = y;
+                    }
                 }
                 State::Default => {
                     self.handle_button_presses(button_states, now);

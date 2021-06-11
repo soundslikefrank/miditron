@@ -2,15 +2,25 @@ type Data = (u8, [u8; 3]);
 
 pub enum Action {
     Cycle(usize, Data),
+    BlinkOneFast(bool, usize, Data),
     Idle,
 }
+
+pub const GREEN: (u8, [u8;  3]) = (175, [0, 255, 0]);
 
 impl Action {
     fn to_cmd(&self) -> Option<Command<Data, 4>> {
         match self {
-            Self::Cycle(idx, data) => {
+            &Self::Cycle(idx, data) => {
                 let mut cmd_data: [Option<Data>; 4] = [Some((0, [0; 3])); 4];
-                cmd_data[*idx] = Some(*data);
+                cmd_data[idx] = Some(data);
+                Some(Command(cmd_data))
+            }
+            &Self::BlinkOneFast(is_on, n, data) => {
+                let mut cmd_data: [Option<Data>; 4] = [Some((0, [0; 3])); 4];
+                if is_on {
+                    cmd_data[n] = Some(data);
+                }
                 Some(Command(cmd_data))
             }
             Self::Idle => None,
@@ -49,6 +59,14 @@ impl LedDispatcher {
                     let next_idx = if idx == 3 { 0 } else { idx + 1 };
                     let cmd = self.state.to_cmd();
                     self.state = Action::Cycle(next_idx, data);
+                    return cmd;
+                }
+                None
+            }
+            Action::BlinkOneFast(is_on, n, data) => {
+                if self.counter.elapsed_ms(200, now) {
+                    let cmd = self.state.to_cmd();
+                    self.state = Action::BlinkOneFast(!is_on, n, data);
                     return cmd;
                 }
                 None

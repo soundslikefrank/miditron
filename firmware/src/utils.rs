@@ -2,7 +2,7 @@ pub mod math {
     use micromath::F32Ext;
 
     /// Quadratic polynomial regression
-    fn quad_reg<const N: usize>(x: &[f32; N], y: &[f32; N]) -> (f32, f32, f32) {
+    pub fn quad_reg<const N: usize>(x: &[f32; N], y: &[f32; N]) -> [f32; 3] {
         let mut sum_x = 0.0;
         let mut sum_y = 0.0;
         let mut sum_x2 = 0.0;
@@ -36,6 +36,6 @@ pub mod math {
         let c = my - b * mx1 - a * mx2;
 
         // y = a * x^2 + b * x + c
-        (a, b, c)
+        [a, b, c]
     }
 }
