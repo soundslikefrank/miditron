@@ -4,6 +4,7 @@ pub enum Action {
     Cycle(usize, Data),
     BlinkOneFast(bool, usize, Data),
     Idle,
+    Stop,
 }
 
 pub const GREEN: (u8, [u8;  3]) = (175, [0, 255, 0]);
@@ -24,6 +25,10 @@ impl Action {
                 Some(Command(cmd_data))
             }
             Self::Idle => None,
+            Self::Stop => {
+                let cmd_data: [Option<Data>; 4] = [Some((0, [0; 3])); 4];
+                Some(Command(cmd_data))
+            },
         }
     }
 }
@@ -52,7 +57,11 @@ impl LedDispatcher {
 
     pub fn next(&mut self, now: u32) -> Option<Command<Data, 4>> {
         match self.state {
-            Action::Idle => self.state.to_cmd(),
+            Action::Idle => {
+                self.state = Action::Idle;
+                self.state.to_cmd()
+            },
+            Action::Stop => self.state.to_cmd(),
             Action::Cycle(idx, data) => {
                 if self.counter.elapsed_ms(100, now) {
                     // TODO: write abstraction for this (see arp)
