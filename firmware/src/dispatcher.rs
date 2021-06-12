@@ -36,17 +36,22 @@ pub struct Dispatcher {
 }
 
 impl Dispatcher {
-    fn cv_from_note(&self, note: u8) -> f32 {
+    // TODO: IDEA put these into the correspinding Destination
+    fn cv_from_note(&self, chan: usize, note: u8) -> f32 {
         let volts = note as f32 * VOLTS_PER_SEMITONE;
-        // FIXME: this only works for the first channel!!
-        let [[a, b, c]] = self.calibration_result.dac4;
+        let [a, b, c] = self.calibration_result.dac4[chan];
         // y = a * x^2 + b * x + c
         let offset = a * (volts * volts) + b * volts + c;
         volts + offset
     }
 
-    fn cv_from_velocity(&self, velo: u8) -> f32 {
-        velo as f32 * VOLTS_PER_VELOCITY
+    // TODO: IDEA put these into the correspinding Destination
+    fn cv_from_velocity(&self, chan: usize, velo: u8) -> f32 {
+        let volts = velo as f32 * VOLTS_PER_VELOCITY;
+        let [a, b, c] = self.calibration_result.dac8[chan];
+        // y = a * x^2 + b * x + c
+        let offset = a * (volts * volts) + b * volts + c;
+        volts + offset
     }
 
     pub fn new(f_refresh: u32, calibration_bytes: &[u8]) -> Self {
@@ -119,9 +124,10 @@ impl Dispatcher {
             match midi_msg {
                 MM::NoteOn(channel, note, velocity) => {
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
-                        self.cvs.set(chan, self.cv_from_note(note.into()));
+                        self.cvs.set(chan, self.cv_from_note(chan, note.into()));
                         self.gates.set(chan, true);
-                        self.mods.set(chan, self.cv_from_velocity(velocity.into()));
+                        self.mods
+                            .set(chan, self.cv_from_velocity(chan, velocity.into()));
                     }
                 }
                 MM::NoteOff(channel, _n, _v) => {
@@ -169,7 +175,6 @@ impl EepromDestination {
         self.data.extend_from_slice(&data).unwrap();
         self.data.resize_default(32).unwrap();
     }
-    // FIXME: panicked at 'source slice length (24) does not match destination slice length (32)'
 
     // TODO: We have to implement the page-wise writing and reading
     pub fn next(&mut self) -> Option<(u8, [u8; 32])> {

@@ -50,9 +50,8 @@ fn main() -> ! {
         mut d_eeprom,
     ) = drivers::setup(f_cpu, f_systick);
 
-    // FIXME: What if the page is full with ones?
     let res = d_eeprom.read_page(0);
-    let mut dispatcher = Dispatcher::new(f_systick, &res[0..24]);
+    let mut dispatcher = Dispatcher::new(f_systick, &res[0..25]);
 
     free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
 
