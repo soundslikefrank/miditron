@@ -31,8 +31,14 @@ pub mod math {
         let mx2 = sum_x2 / n;
         let my = sum_y / n;
 
-        let a = (sy2 * s11 - sy1 * s12) / (s22 * s11 - s12.powi(2));
-        let b = (sy1 * s22 - sy2 * s12) / (s22 * s11 - s12.powi(2));
+        let sx = s22 * s11 - s12.powi(2);
+
+        if sx == 0.0 {
+            return [0.0, 0.0, 0.0];
+        }
+
+        let a = (sy2 * s11 - sy1 * s12) / sx;
+        let b = (sy1 * s22 - sy2 * s12) / sx;
         let c = my - b * mx1 - a * mx2;
 
         // y = a * x^2 + b * x + c

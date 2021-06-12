@@ -1,10 +1,11 @@
 use embedded_midi::MidiMessage as MM;
-use heapless::Vec;
 
 pub mod calibrator;
 pub mod led;
+mod eeprom_dest;
 
 use self::calibrator::{CalibrationResult, Calibrator};
+use self::eeprom_dest::EepromDestination;
 use self::led::LedDispatcher;
 use crate::{drivers::ButtonState, layout::Layout};
 
@@ -24,7 +25,6 @@ enum State {
 
 pub struct Dispatcher {
     calibrator: Calibrator,
-    // TODO: Does it make sense to have this here as opposed to the DACs?
     calibration_result: CalibrationResult,
     eeprom: EepromDestination,
     layout: Layout,
@@ -58,7 +58,7 @@ impl Dispatcher {
         Self {
             calibrator: Calibrator::new(),
             calibration_result: CalibrationResult::from_bytes(calibration_bytes),
-            eeprom: EepromDestination::new(),
+            eeprom: EepromDestination::new(f_refresh),
             layout: Layout::new(),
             leds: LedDispatcher::new(f_refresh),
             cvs: Destination::new(),
@@ -76,7 +76,7 @@ impl Dispatcher {
         Option<Command<bool, 4>>,
         Option<Command<f32, 8>>,
         Option<Command<(u8, [u8; 3]), 4>>,
-        Option<(u8, [u8; 32])>,
+        Option<(usize, [u8; 32])>,
     ) {
         if let Some((button_states, midi_msg, now)) = inputs {
             match self.state {
@@ -90,7 +90,7 @@ impl Dispatcher {
                     ) {
                         self.state = State::Default;
                         self.calibration_result = result;
-                        self.eeprom.set_page(0, &self.calibration_result.to_bytes());
+                        self.eeprom.set(0, &self.calibration_result.to_bytes(), now);
                     }
                 }
                 State::Default => {
@@ -103,7 +103,7 @@ impl Dispatcher {
                 self.gates.next(),
                 self.mods.next(),
                 self.leds.next(now),
-                self.eeprom.next(),
+                self.eeprom.next(now),
             );
         }
         (None, None, None, None, None)
@@ -154,41 +154,6 @@ impl<T, const N: usize> Command<T, N> {
             .enumerate()
             .filter(|(_i, v)| v.is_some())
             .for_each(|(i, v)| f((i, v.as_ref().unwrap())))
-    }
-}
-
-struct EepromDestination {
-    page: Option<u8>,
-    data: Vec<u8, 32>,
-}
-
-impl EepromDestination {
-    fn new() -> Self {
-        Self {
-            data: Vec::new(),
-            page: None,
-        }
-    }
-
-    pub fn set_page(&mut self, page: u8, data: &[u8]) {
-        self.page = Some(page);
-        self.data.extend_from_slice(&data).unwrap();
-        self.data.resize_default(32).unwrap();
-    }
-
-    // TODO: We have to implement the page-wise writing and reading
-    pub fn next(&mut self) -> Option<(u8, [u8; 32])> {
-        if let Some(page) = self.page {
-            if self.data.is_empty() {
-                return None;
-            }
-            let mut res: [u8; 32] = [0; 32];
-            res.copy_from_slice(&self.data);
-            self.page = None;
-            self.data.clear();
-            return Some((page, res));
-        }
-        None
     }
 }
 

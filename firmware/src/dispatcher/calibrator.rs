@@ -19,16 +19,14 @@ enum Target {
 }
 
 pub struct CalibrationResult {
-    // TODO: Replace `1`s with 4 and 8 respectively
-    pub dac4: [[f32; 3]; 1],
-    pub dac8: [[f32; 3]; 1],
+    pub dac4: [[f32; 3]; 4],
+    pub dac8: [[f32; 3]; 8],
 }
 
 impl CalibrationResult {
-    // TODO: Replace `1`s with 4 and 8 respectively
-    fn from_points(dac4_points: [[f32; 14]; 1], dac8_points: [[f32; 11]; 1]) -> Self {
-        let mut dac4 = [[0.0; 3]; 1];
-        let mut dac8 = [[0.0; 3]; 1];
+    fn from_points(dac4_points: [[f32; 14]; 4], dac8_points: [[f32; 11]; 8]) -> Self {
+        let mut dac4 = [[0.0; 3]; 4];
+        let mut dac8 = [[0.0; 3]; 8];
         for (i, chan) in dac4_points.iter().enumerate() {
             dac4[i] = quad_reg(&DAC4_VOLTAGES, chan);
         }
@@ -39,40 +37,36 @@ impl CalibrationResult {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Self {
-        // TODO: Acually 4*3*4 + 4*3*8 bytes + 1 byte (write flag) = 145
-        if bytes.len() != 25 {
-            // Slice needs to be 25/145 bytes long!!!
-            panic!("Should be a 25 bytes slice");
-        }
-        let mut dac4 = [[0.0; 3]; 1];
-        let mut dac8 = [[0.0; 3]; 1];
+        let mut dac4 = [[0.0; 3]; 4];
+        let mut dac8 = [[0.0; 3]; 8];
 
         if bytes[0] == MAGIC_CALIBRATION_FLAG {
-            let dac4_bytes = &bytes[1..13];
-            let dac8_bytes = &bytes[13..25];
+            // 0 is the magic byte
+            // 3 values * 4 channels * 4 bytes per f32 = 48 bytes
+            let dac4_bytes = &bytes[1..49];
+            // 3 values * 8 channels * 4 bytes per f32 = 96 bytes
+            let dac8_bytes = &bytes[49..145];
 
-            // TODO: we would loop through all the channels here
-            for (dest, src) in dac4[0].iter_mut().zip(dac4_bytes.chunks_exact(4)) {
-                *dest = f32::from_ne_bytes(src.try_into().unwrap());
-            }
+            dac4.iter_mut().for_each(|chan| {
+                for (dest, src) in chan.iter_mut().zip(dac4_bytes.chunks_exact(4)) {
+                    *dest = f32::from_ne_bytes(src.try_into().unwrap());
+                }
+            });
 
-            for (dest, src) in dac8[0].iter_mut().zip(dac8_bytes.chunks_exact(4)) {
-                *dest = f32::from_ne_bytes(src.try_into().unwrap());
-            }
+            dac8.iter_mut().for_each(|chan| {
+                for (dest, src) in chan.iter_mut().zip(dac8_bytes.chunks_exact(4)) {
+                    *dest = f32::from_ne_bytes(src.try_into().unwrap());
+                }
+            });
         }
 
         Self { dac4, dac8 }
     }
 
-    // TODO: Acually 4*3*4 + 4*3*8 bytes + 1 magic byte = 145
-    // For now 3 (values per channel) * 4 (u8 bytes per f32) * 2 (dac4 and dac8) + magic byte = 25
-    /*
-     * In next stable release (no IntoIter necessary)
-     * let f_vec: [f32; 2] = [0.55, 2.33];
-     * let u8_vec = f_vec.iter().flat_map(|x| x.to_le_bytes()).collect::<Vec<u8>>();
-     */
-    pub fn to_bytes(&self) -> Vec<u8, 25> {
-        let mut vec: Vec<u8, 25> = Vec::new();
+    // TODO: In next stable release - no IntoIter necessary, remove
+    // 4*3*4 + 4*3*8 bytes + 1 magic byte = 145
+    pub fn to_bytes(&self) -> Vec<u8, 145> {
+        let mut vec: Vec<u8, 145> = Vec::new();
         vec.push(MAGIC_CALIBRATION_FLAG).unwrap();
         vec.extend(
             self.dac4
@@ -118,8 +112,7 @@ impl Calibrator {
             return None;
         }
         if let Target::End = self.target {
-            // TODO: This is for one channel only for now
-            let result = CalibrationResult::from_points([self.dac4_data[0]], [self.dac8_data[0]]);
+            let result = CalibrationResult::from_points(self.dac4_data, self.dac8_data);
             return Some(result);
         }
         match button_states {

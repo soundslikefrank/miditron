@@ -50,25 +50,14 @@ fn main() -> ! {
         mut d_eeprom,
     ) = drivers::setup(f_cpu, f_systick);
 
-    let res = d_eeprom.read_page(0);
-    let mut dispatcher = Dispatcher::new(f_systick, &res[0..25]);
+    // TODO: we will have more setup here
+    let mut calibration_data: [u8; 160] = [0; 160];
+    d_eeprom.read_into_buffer(0, &mut calibration_data);
+    let mut dispatcher = Dispatcher::new(f_systick, &calibration_data);
 
     free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
 
-    // let mut c = 1;
-
     loop {
-        /* if c == 0 {
-            _eeprom.store_page(0, &[6, 6, 6]);
-            c = 1;
-        } */
-
-        /* if c == 1 {
-            let res = d_eeprom.read_page(0);
-            let x = CalibrationResult::from_bytes(&res[0..24]);
-            c = 2;
-        } */
-
         let inputs = free(|cs| {
             if let Some(res) = Resources::borrow(cs).as_mut() {
                 let button_states = res.push_buttons.read();

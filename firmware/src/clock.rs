@@ -29,11 +29,8 @@ impl Counter {
     }
 
     pub fn elapsed_ms(&mut self, ms: u32, now: u32) -> bool {
-        // If self == now, chances are that the counter was just reset
-        // If the counter is moving with the exact same speed as the clock we have a problem
-        // We might need a `reset` field though to be sure
-        // 
-        if self.last == now || now.wrapping_sub(self.last) >= ms * self.f_refresh {
+        // TODO: this is not perfectly fine yet. We want the first call to go through immediately
+        if now.wrapping_sub(self.last) >= ms * self.f_refresh {
             self.last = now;
             return true;
         }
