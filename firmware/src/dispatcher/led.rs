@@ -58,7 +58,11 @@ impl LedDispatcher {
     pub fn next(&mut self, now: u32) -> Option<Command<Data, 4>> {
         match self.state {
             Action::Idle => None,
-            Action::Stop => self.state.to_cmd(),
+            Action::Stop => {
+                let cmd = self.state.to_cmd();
+                self.state = Action::Idle;
+                return cmd;
+            }
             Action::Cycle(idx, data) => {
                 if self.counter.elapsed_ms(100, now) {
                     // TODO: write abstraction for this (see arp)
