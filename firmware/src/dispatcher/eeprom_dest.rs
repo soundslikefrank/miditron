@@ -40,7 +40,7 @@ impl EepromDestination {
     }
 
     pub fn next(&mut self, now: u32) -> Option<(usize, [u8; 32])> {
-        if self.current_page < self.last_page && self.counter.elapsed_ms(5, now) {
+        if self.current_page < self.last_page && self.counter.elapsed_ms(10, now) {
             let buf = self
                 .data
                 .chunks_exact(32)
