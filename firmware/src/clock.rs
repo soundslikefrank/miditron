@@ -15,21 +15,28 @@ impl Clock {
 }
 
 pub struct Counter {
-    last: u32,
     f_refresh: u32,
+    first_run: bool,
+    last: u32,
 }
 
 impl Counter {
     pub fn new(f_refresh: u32) -> Self {
         Self {
-            last: 0,
             // In 1/ms
             f_refresh: f_refresh / 1000,
+            first_run: false,
+            last: 0,
         }
     }
 
     pub fn elapsed_ms(&mut self, ms: u32, now: u32) -> bool {
-        // TODO: this is not perfectly fine yet. We want the first call to go through immediately
+        // Usually we want this to fire once as soon as `reset` was called
+        // TODO: can this be improved?
+        if self.first_run {
+            self.first_run = false;
+            return true;
+        }
         if now.wrapping_sub(self.last) >= ms * self.f_refresh {
             self.last = now;
             return true;
@@ -39,5 +46,6 @@ impl Counter {
 
     pub fn reset(&mut self, now: u32) {
         self.last = now;
+        self.first_run = true;
     }
 }
