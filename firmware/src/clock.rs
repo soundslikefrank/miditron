@@ -1,16 +1,25 @@
-pub struct Clock(u32);
+use core::sync::atomic::{AtomicU32, Ordering};
+
+static CLOCK: AtomicU32 = AtomicU32::new(0);
+
+pub struct Clock;
 
 impl Clock {
-    pub fn new() -> Self {
-        Self(0)
+    pub fn get() -> u32 {
+        CLOCK.load(Ordering::Relaxed)
     }
 
-    pub fn get(&self) -> u32 {
-        self.0
+    pub fn tick() {
+        CLOCK.fetch_add(1, Ordering::Relaxed);
     }
 
-    pub fn tick(&mut self) {
-        self.0 = self.0.wrapping_add(1);
+    pub fn delay(ms: u32, f_refresh: u32) {
+        let start = Self::get();
+        loop {
+            if Self::get() - start >= ms * f_refresh / 1000 {
+                break;
+            }
+        }
     }
 }
 

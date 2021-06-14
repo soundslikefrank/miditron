@@ -26,6 +26,7 @@ mod layout;
 mod resources;
 mod utils;
 
+use clock::Clock;
 use resources::Resources;
 
 const F_CPU: MegaHertz = MegaHertz(84);
@@ -54,19 +55,8 @@ fn main() -> ! {
 
     free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
 
-    loop {
-        // FIXME: use atomic u32 for timer everywhere?
-        if let Some(time) = free(|cs| {
-            if let Some(res) = Resources::borrow(cs).as_mut() {
-                return Some(res.clock.get());
-            }
-            None
-        }) {
-            if time == 8000 {
-                break;
-            }
-        }
-    }
+    // Wait a bit for the hardware (eeprom) to settle in
+    Clock::delay(50, f_systick);
 
     // TODO: we will have more setup here
     let mut calibration_data: [u8; 160] = [0; 160];
@@ -78,9 +68,9 @@ fn main() -> ! {
     loop {
         let inputs = free(|cs| {
             if let Some(res) = Resources::borrow(cs).as_mut() {
+                let now = Clock::get();
                 let button_states = res.push_buttons.read();
                 let midi_msg = res.midi_input.read();
-                let now = res.clock.get();
                 // TODO: add arp output
                 return Some((button_states, midi_msg, now));
             }

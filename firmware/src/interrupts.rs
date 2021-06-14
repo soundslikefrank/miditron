@@ -5,11 +5,14 @@ use cortex_m::interrupt::free;
 use hal::{pac, stm32::interrupt};
 use rt::ExceptionFrame;
 
+use crate::clock::Clock;
 use crate::resources::Resources;
 
 #[interrupt]
 fn USART1() {
     free(|cs| {
+        // TODO: how about we do this in the main loop as well and only set an AtomicBool to true
+        // when this happens???
         let sr = unsafe { (*pac::USART1::ptr()).sr.read() };
         if sr.rxne().bit_is_set() {
             if let Some(res) = Resources::borrow(cs).as_mut() {
@@ -34,9 +37,9 @@ fn USART1() {
 
 #[exception]
 fn SysTick() {
+    Clock::tick();
     free(|cs| {
         if let Some(res) = Resources::borrow(cs).as_mut() {
-            res.clock.tick();
             res.push_buttons.poll();
         }
     })

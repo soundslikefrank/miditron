@@ -11,6 +11,9 @@ type PinD = PC3<Input<PullUp>>;
 
 const B_IDLE: [ButtonState; 4] = [ButtonState::Idle; 4];
 
+// TODO: We can encode the entire button state in an AtomicU8
+// First four bits are short press, last four bits are long press.
+// No more need to put it in resources!
 #[derive(Copy, Clone)]
 pub enum ButtonState {
     Press,
