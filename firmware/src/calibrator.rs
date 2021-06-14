@@ -1,14 +1,20 @@
 use core::{array::IntoIter, convert::TryInto};
 use heapless::Vec;
 
-use super::{led, ButtonState as B, CvDestination, LedDispatcher, ModDestination};
-use crate::utils::math::quad_reg;
+use crate::{
+    destinations::{CvDestination, colors, LedAction, LedDestination, ModDestination},
+    drivers::ButtonState as B,
+    utils::math::quad_reg,
+};
 
 const DAC4_VOLTAGES: [f32; 14] = [
     -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
 ];
 const DAC8_VOLTAGES: [f32; 11] = [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0];
 const MAGIC_CALIBRATION_FLAG: u8 = 42;
+
+pub type Dac4Result = [[f32; 3]; 4];
+pub type Dac8Result = [[f32; 3]; 8];
 
 #[derive(Clone, Copy)]
 enum Target {
@@ -19,8 +25,8 @@ enum Target {
 }
 
 pub struct CalibrationResult {
-    pub dac4: [[f32; 3]; 4],
-    pub dac8: [[f32; 3]; 8],
+    pub dac4: Dac4Result,
+    pub dac8: Dac8Result,
 }
 
 impl CalibrationResult {
@@ -80,6 +86,10 @@ impl CalibrationResult {
         );
         vec
     }
+
+    pub fn split(&self) -> (Dac4Result, Dac8Result) {
+        (self.dac4, self.dac8)
+    }
 }
 
 pub struct Calibrator {
@@ -104,7 +114,7 @@ impl Calibrator {
         now: u32,
         cvs: &mut CvDestination,
         mods: &mut ModDestination,
-        leds: &mut LedDispatcher,
+        leds: &mut LedDestination,
     ) -> Option<CalibrationResult> {
         if let Target::Start = self.target {
             self.advance(leds, now);
@@ -163,22 +173,22 @@ impl Calibrator {
             Target::Dac4 => {
                 let voltage = DAC4_VOLTAGES[v];
                 self.dac4_data[chan][v] += offset;
-                cvs.set(chan, voltage + self.dac4_data[chan][v]);
+                cvs.set_raw(chan, voltage + self.dac4_data[chan][v]);
             }
             Target::Dac8 => {
                 let voltage = DAC8_VOLTAGES[v];
                 self.dac8_data[chan][v] += offset;
-                mods.set(chan, voltage + self.dac8_data[chan][v]);
+                mods.set_raw(chan, voltage + self.dac8_data[chan][v]);
             }
             _ => {}
         }
     }
 
-    fn advance(&mut self, leds: &mut LedDispatcher, now: u32) {
+    fn advance(&mut self, leds: &mut LedDestination, now: u32) {
         let (chan, v) = self.indices;
         match self.target {
             Target::Start => {
-                leds.set(led::Action::BlinkOneFast(true, 0, led::GREEN), now);
+                leds.set(LedAction::BlinkOneFast(true, 0, colors::GREEN), now);
                 self.target = Target::Dac4;
             }
             Target::Dac4 => {
@@ -204,7 +214,7 @@ impl Calibrator {
                     // TODO: this is just for the first channel of Dac8
                     // Remove the following code
                     self.target = Target::End;
-                    leds.set(led::Action::Stop, now);
+                    leds.set(LedAction::Stop, now);
                     // And uncomment this
                     /* if chan == 7 {
                         self.target = Target::End;

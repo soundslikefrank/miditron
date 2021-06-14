@@ -1,20 +1,14 @@
 use embedded_midi::MidiMessage as MM;
 
-pub mod calibrator;
-pub mod led;
-mod eeprom_dest;
-
-use self::calibrator::{CalibrationResult, Calibrator};
-use self::eeprom_dest::EepromDestination;
-use self::led::LedDispatcher;
-use crate::{drivers::ButtonState, layout::Layout};
-
-type CvDestination = Destination<f32, 4>;
-type GateDestination = Destination<bool, 4>;
-type ModDestination = Destination<f32, 8>;
-
-const VOLTS_PER_SEMITONE: f32 = 1_f32 / 12_f32;
-const VOLTS_PER_VELOCITY: f32 = 5_f32 / 127_f32;
+use crate::{
+    calibrator::{CalibrationResult, Calibrator},
+    destinations::{
+        colors::GREEN, Command, CvDestination, Destination, EepromDestination, GateDestination,
+        LedAction, LedDestination, ModDestination,
+    },
+    drivers::ButtonState,
+    layout::Layout,
+};
 
 type Inputs = ([ButtonState; 4], Option<MM>, u32);
 
@@ -25,10 +19,9 @@ enum State {
 
 pub struct Dispatcher {
     calibrator: Calibrator,
-    calibration_result: CalibrationResult,
     eeprom: EepromDestination,
     layout: Layout,
-    leds: LedDispatcher,
+    leds: LedDestination,
     cvs: CvDestination,
     gates: GateDestination,
     mods: ModDestination,
@@ -36,34 +29,17 @@ pub struct Dispatcher {
 }
 
 impl Dispatcher {
-    // TODO: IDEA put these into the correspinding Destination
-    fn cv_from_note(&self, chan: usize, note: u8) -> f32 {
-        let volts = note as f32 * VOLTS_PER_SEMITONE;
-        let [a, b, c] = self.calibration_result.dac4[chan];
-        // y = a * x^2 + b * x + c
-        let offset = a * (volts * volts) + b * volts + c;
-        volts + offset
-    }
-
-    // TODO: IDEA put these into the correspinding Destination
-    fn cv_from_velocity(&self, chan: usize, velo: u8) -> f32 {
-        let volts = velo as f32 * VOLTS_PER_VELOCITY;
-        let [a, b, c] = self.calibration_result.dac8[chan];
-        // y = a * x^2 + b * x + c
-        let offset = a * (volts * volts) + b * volts + c;
-        volts + offset
-    }
-
     pub fn new(f_refresh: u32, calibration_bytes: &[u8]) -> Self {
+        let (dac4_result, dac8_result) = CalibrationResult::from_bytes(calibration_bytes).split();
+
         Self {
             calibrator: Calibrator::new(),
-            calibration_result: CalibrationResult::from_bytes(calibration_bytes),
             eeprom: EepromDestination::new(f_refresh),
             layout: Layout::new(),
-            leds: LedDispatcher::new(f_refresh),
-            cvs: Destination::new(),
-            gates: Destination::new(),
-            mods: Destination::new(),
+            leds: LedDestination::new(f_refresh),
+            cvs: CvDestination::new(dac4_result),
+            gates: GateDestination::new(),
+            mods: ModDestination::new(dac8_result),
             state: State::Default,
         }
     }
@@ -89,8 +65,10 @@ impl Dispatcher {
                         &mut self.leds,
                     ) {
                         self.state = State::Default;
-                        self.calibration_result = result;
-                        self.eeprom.set(0, &self.calibration_result.to_bytes(), now);
+                        self.eeprom.set(0, &result.to_bytes(), now);
+                        let (dac4_result, dac8_result) = result.split();
+                        self.cvs.set_calibration(dac4_result);
+                        self.mods.set_calibration(dac8_result);
                     }
                 }
                 State::Default => {
@@ -119,15 +97,15 @@ impl Dispatcher {
         }
     }
 
-    fn handle_midi_message(&mut self, midi_msg: Option<MM>, _now: u32) {
+    fn handle_midi_message(&mut self, midi_msg: Option<MM>, now: u32) {
         if let Some(midi_msg) = midi_msg {
             match midi_msg {
                 MM::NoteOn(channel, note, velocity) => {
+                    self.leds.set(LedAction::Flash(0, GREEN), now);
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
-                        self.cvs.set(chan, self.cv_from_note(chan, note.into()));
+                        self.cvs.set_from_note(chan, note.into());
                         self.gates.set(chan, true);
-                        self.mods
-                            .set(chan, self.cv_from_velocity(chan, velocity.into()));
+                        self.mods.set_from_velocity(chan, velocity.into());
                     }
                 }
                 MM::NoteOff(channel, _n, _v) => {
@@ -139,47 +117,5 @@ impl Dispatcher {
                 _ => {}
             }
         }
-    }
-}
-
-pub struct Command<T, const N: usize>([Option<T>; N]);
-
-impl<T, const N: usize> Command<T, N> {
-    pub fn for_each<F>(&self, mut f: F) -> ()
-    where
-        F: FnMut((usize, &T)),
-    {
-        self.0
-            .iter()
-            .enumerate()
-            .filter(|(_i, v)| v.is_some())
-            .for_each(|(i, v)| f((i, v.as_ref().unwrap())))
-    }
-}
-
-pub struct Destination<T, const N: usize> {
-    data: [Option<T>; N],
-    changed: bool,
-}
-
-impl<T: Copy, const N: usize> Destination<T, N> {
-    pub fn new() -> Self {
-        Self {
-            data: [None; N],
-            changed: false,
-        }
-    }
-    pub fn set(&mut self, n: usize, val: T) {
-        self.data[n] = Some(val);
-        self.changed = true;
-    }
-    pub fn next(&mut self) -> Option<Command<T, N>> {
-        if !self.changed {
-            return None;
-        }
-        self.changed = false;
-        let mut data: [Option<T>; N] = [None; N];
-        data.copy_from_slice(&self.data);
-        Some(Command(data))
     }
 }

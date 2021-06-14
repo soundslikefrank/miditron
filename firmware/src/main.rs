@@ -16,7 +16,9 @@ use dispatcher::Dispatcher;
 use hal::time::{Hertz, KiloHertz, MegaHertz};
 
 mod arp;
+mod calibrator;
 mod clock;
+mod destinations;
 mod dispatcher;
 mod drivers;
 mod interrupts;
@@ -50,12 +52,28 @@ fn main() -> ! {
         mut d_eeprom,
     ) = drivers::setup(f_cpu, f_systick);
 
+    free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
+
+    loop {
+        // FIXME: use atomic u32 for timer everywhere?
+        if let Some(time) = free(|cs| {
+            if let Some(res) = Resources::borrow(cs).as_mut() {
+                return Some(res.clock.get());
+            }
+            None
+        }) {
+            if time == 8000 {
+                break;
+            }
+        }
+    }
+
     // TODO: we will have more setup here
     let mut calibration_data: [u8; 160] = [0; 160];
     d_eeprom.read_into_buffer(0, &mut calibration_data);
     let mut dispatcher = Dispatcher::new(f_systick, &calibration_data);
 
-    free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
+    let mut t = false;
 
     loop {
         let inputs = free(|cs| {
@@ -87,5 +105,9 @@ fn main() -> ! {
         if let Some((page, data)) = eeprom {
             d_eeprom.store_page(page, &data);
         }
+
+        // TODO: this is for debugging purposes only - remove
+        d_gates.set(1, t);
+        t = !t;
     }
 }

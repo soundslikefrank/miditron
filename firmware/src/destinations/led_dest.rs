@@ -3,11 +3,14 @@ type Data = (u8, [u8; 3]);
 pub enum Action {
     Cycle(usize, Data),
     BlinkOneFast(bool, usize, Data),
+    Flash(usize, Data),
     Idle,
     Stop,
 }
 
-pub const GREEN: (u8, [u8;  3]) = (175, [0, 255, 0]);
+pub mod colors {
+    pub const GREEN: (u8, [u8; 3]) = (175, [0, 255, 0]);
+}
 
 impl Action {
     fn to_cmd(&self) -> Option<Command<Data, 4>> {
@@ -24,10 +27,15 @@ impl Action {
                 }
                 Some(Command(cmd_data))
             }
+            &Self::Flash(n, data) => {
+                let mut cmd_data: [Option<Data>; 4] = [None; 4];
+                cmd_data[n] = Some(data);
+                Some(Command(cmd_data))
+            }
             Self::Stop => {
                 let cmd_data: [Option<Data>; 4] = [Some((0, [0; 3])); 4];
                 Some(Command(cmd_data))
-            },
+            }
             _ => None,
         }
     }
@@ -36,13 +44,12 @@ impl Action {
 use super::Command;
 use crate::clock::Counter;
 
-// FIXME rename
-pub struct LedDispatcher {
+pub struct LedDestination {
     counter: Counter,
     state: Action,
 }
 
-impl LedDispatcher {
+impl LedDestination {
     pub fn new(f_refresh: u32) -> Self {
         Self {
             counter: Counter::new(f_refresh),
@@ -80,6 +87,12 @@ impl LedDispatcher {
                     return cmd;
                 }
                 None
+            }
+            Action::Flash(_, _) => {
+                if self.counter.elapsed_ms(100, now) {
+                    self.state = Action::Stop;
+                }
+                return self.state.to_cmd();
             }
         }
     }
