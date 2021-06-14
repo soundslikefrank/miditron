@@ -1,4 +1,4 @@
-file target/thumbv7em-none-eabihf/debug/miditron
+file target/thumbv7em-none-eabihf/release/miditron
 
 target extended-remote :3333
 
