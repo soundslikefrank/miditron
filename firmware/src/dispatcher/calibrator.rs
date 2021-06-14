@@ -112,8 +112,11 @@ impl Calibrator {
             return None;
         }
         if let Target::End = self.target {
-            let result = CalibrationResult::from_points(self.dac4_data, self.dac8_data);
-            return Some(result);
+            self.reset();
+            return Some(CalibrationResult::from_points(
+                self.dac4_data,
+                self.dac8_data,
+            ));
         }
         match button_states {
             [_, B::Press, B::Press, _] => {
@@ -139,6 +142,11 @@ impl Calibrator {
             _ => {}
         }
         None
+    }
+
+    fn reset(&mut self) {
+        self.target = Target::Start;
+        self.indices = (0, 0);
     }
 
     fn get_step_size(&self) -> (f32, f32) {
