@@ -1,5 +1,4 @@
 use embedded_hal::digital::v2::InputPin;
-use heapless::spsc::Queue;
 use stm32f4xx_hal::gpio::{
     gpioc::{PC0, PC1, PC2, PC3},
     Input, PullUp,
@@ -9,6 +8,8 @@ type PinA = PC0<Input<PullUp>>;
 type PinB = PC1<Input<PullUp>>;
 type PinC = PC2<Input<PullUp>>;
 type PinD = PC3<Input<PullUp>>;
+
+const B_IDLE: [ButtonState; 4] = [ButtonState::Idle; 4];
 
 #[derive(Copy, Clone)]
 pub enum ButtonState {
@@ -22,7 +23,7 @@ pub struct PushButtons {
     button_b: Button<PinB>,
     button_c: Button<PinC>,
     button_d: Button<PinD>,
-    buffer: Queue<[ButtonState; 4], 2>,
+    buffer: Option<[ButtonState; 4]>,
     counter: u16,
     debounced: u8,
     press_threshold: u16,
@@ -41,7 +42,7 @@ impl PushButtons {
             button_b: Button::new(pin_b),
             button_c: Button::new(pin_c),
             button_d: Button::new(pin_d),
-            buffer: Queue::new(),
+            buffer: None,
             counter: 0,
             debounced: 0,
             press_threshold: (f_refresh as f32 / (1.0 / Self::PRESS_THRESHOLD)) as u16,
@@ -50,7 +51,11 @@ impl PushButtons {
     }
 
     pub fn read(&mut self) -> [ButtonState; 4] {
-        self.buffer.dequeue().unwrap_or([ButtonState::Idle; 4])
+        if let Some(buf) = self.buffer {
+            self.buffer = None;
+            return buf;
+        }
+        return B_IDLE;
     }
 
     pub fn poll(&mut self) {
@@ -74,14 +79,12 @@ impl PushButtons {
     }
 
     fn set_pressed(&mut self, button_state: ButtonState) {
-        self.buffer
-            .enqueue([
-                self.from_bits(3, button_state),
-                self.from_bits(2, button_state),
-                self.from_bits(1, button_state),
-                self.from_bits(0, button_state),
-            ])
-            .ok();
+        self.buffer = Some([
+            self.from_bits(3, button_state),
+            self.from_bits(2, button_state),
+            self.from_bits(1, button_state),
+            self.from_bits(0, button_state),
+        ]);
         self.debounced = 0;
         self.counter = 0;
     }
