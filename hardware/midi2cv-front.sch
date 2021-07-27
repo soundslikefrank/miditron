@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 1
+Sheet 5 5
 Title ""
 Date ""
 Rev ""
@@ -20,6 +20,7 @@ P 3450 1750
 AR Path="/60A7E42A/60A45791" Ref="U?"  Part="1" 
 AR Path="/60A44BB1/60A45791" Ref="U?"  Part="1" 
 AR Path="/60A45791" Ref="U?"  Part="1" 
+AR Path="/61006ED6/60A45791" Ref="U?"  Part="1" 
 F 0 "U?" H 3450 2217 50  0000 C CNN
 F 1 "6N137" H 3450 2126 50  0000 C CNN
 F 2 "Package_DIP:DIP-8_W7.62mm" H 3450 1250 50  0001 C CNN
@@ -476,4 +477,23 @@ Wire Wire Line
 Connection ~ 3850 1550
 Wire Wire Line
 	3850 1550 4000 1550
+$Comp
+L LP5012PWR:LP5012PWR IC?
+U 1 1 6100A408
+P 2900 4050
+F 0 "IC?" H 3500 4315 50  0000 C CNN
+F 1 "LP5012PWR" H 3500 4224 50  0000 C CNN
+F 2 "SOP65P640X120-24N" H 3950 4150 50  0001 L CNN
+F 3 "https://www.ti.com/lit/ds/symlink/lp5012.pdf?ts=1615929314042&ref_url=https%253A%252F%252Fwww.mouser.co.uk%252F" H 3950 4050 50  0001 L CNN
+F 4 "LED Lighting Drivers" H 3950 3950 50  0001 L CNN "Description"
+F 5 "1.2" H 3950 3850 50  0001 L CNN "Height"
+F 6 "Texas Instruments" H 3950 3750 50  0001 L CNN "Manufacturer_Name"
+F 7 "LP5012PWR" H 3950 3650 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "595-LP5012PWR" H 3950 3550 50  0001 L CNN "Mouser Part Number"
+F 9 "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/LP5012PWR?qs=T94vaHKWudSL6jLwBy12Hg%3D%3D" H 3950 3450 50  0001 L CNN "Mouser Price/Stock"
+F 10 "" H 3950 3350 50  0001 L CNN "Arrow Part Number"
+F 11 "" H 3950 3250 50  0001 L CNN "Arrow Price/Stock"
+	1    2900 4050
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

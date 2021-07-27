@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 3
+Sheet 2 5
 Title ""
 Date ""
 Rev ""
@@ -111,35 +111,14 @@ $EndComp
 $Comp
 L power:+3.3V #PWR?
 U 1 1 60A5CF6A
-P 5600 1400
-F 0 "#PWR?" H 5600 1250 50  0001 C CNN
-F 1 "+3.3V" H 5615 1573 50  0000 C CNN
-F 2 "" H 5600 1400 50  0001 C CNN
-F 3 "" H 5600 1400 50  0001 C CNN
-	1    5600 1400
+P 5550 1600
+F 0 "#PWR?" H 5550 1450 50  0001 C CNN
+F 1 "+3.3V" H 5565 1773 50  0000 C CNN
+F 2 "" H 5550 1600 50  0001 C CNN
+F 3 "" H 5550 1600 50  0001 C CNN
+	1    5550 1600
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5350 1700 5350 1500
-Wire Wire Line
-	5350 1500 5450 1500
-Connection ~ 5550 1500
-Wire Wire Line
-	5550 1500 5550 1700
-Wire Wire Line
-	5450 1700 5450 1500
-Connection ~ 5450 1500
-Wire Wire Line
-	5450 1500 5550 1500
-Wire Wire Line
-	5650 1700 5650 1500
-Wire Wire Line
-	5650 1500 5600 1500
-Wire Wire Line
-	5750 1700 5750 1500
-Wire Wire Line
-	5750 1500 5650 1500
-Connection ~ 5650 1500
 Wire Wire Line
 	5450 5300 5450 5500
 $Comp
@@ -176,47 +155,26 @@ F 3 "" H 5550 5600 50  0001 C CNN
 	1    5550 5600
 	1    0    0    -1  
 $EndComp
-Text GLabel 3500 5700 2    50   Input ~ 0
+Text GLabel 3700 3650 2    50   Input ~ 0
 spi1_sck
 Text GLabel 8500 2600 0    50   Input ~ 0
 spi1_sck
-Text GLabel 3500 5600 2    50   Input ~ 0
+Text GLabel 3700 3550 2    50   Input ~ 0
 spi1_nss
 Text GLabel 8500 2750 0    50   Input ~ 0
 spi1_nss
-Text GLabel 3500 5900 2    50   Input ~ 0
+Text GLabel 3700 3850 2    50   Input ~ 0
 spi1_mosi
 Text GLabel 8500 2450 0    50   Input ~ 0
 spi1_mosi
-Text GLabel 3900 5050 0    50   Input ~ 0
+Text GLabel 4100 3000 0    50   Input ~ 0
 i2c2_scl
-Text GLabel 3900 5150 0    50   Input ~ 0
+Text GLabel 4100 3100 0    50   Input ~ 0
 i2c2_sda
 Text GLabel 8500 4250 0    50   Input ~ 0
 i2c2_scl
 Text GLabel 8500 4450 0    50   Input ~ 0
 i2c2_sda
-$Comp
-L MCU_ST_STM32F4:STM32F410RBTx U?
-U 1 1 60B028B6
-P 5550 3500
-F 0 "U?" H 6150 1650 50  0000 C CNN
-F 1 "STM32F410RBTx" H 6150 1550 50  0000 C CNN
-F 2 "Package_QFP:LQFP-64_10x10mm_P0.5mm" H 4950 1800 50  0001 R CNN
-F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/DM00214043.pdf" H 5550 3500 50  0001 C CNN
-	1    5550 3500
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	5750 1500 5850 1500
-Wire Wire Line
-	5850 1500 5850 1700
-Connection ~ 5750 1500
-Wire Wire Line
-	5600 1500 5600 1400
-Connection ~ 5600 1500
-Wire Wire Line
-	5600 1500 5550 1500
 Wire Wire Line
 	5650 5500 5750 5500
 Wire Wire Line
@@ -226,4 +184,38 @@ Wire Wire Line
 	5450 5500 5550 5500
 Wire Wire Line
 	5550 5500 5550 5600
+$Comp
+L MCU_ST_STM32F4:STM32F401RBTx U?
+U 1 1 6100D1FD
+P 5550 3500
+F 0 "U?" H 6250 5300 50  0000 C CNN
+F 1 "STM32F401RBTx" H 6250 5200 50  0000 C CNN
+F 2 "Package_QFP:LQFP-64_10x10mm_P0.5mm" H 4950 1800 50  0001 R CNN
+F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/DM00086815.pdf" H 5550 3500 50  0001 C CNN
+	1    5550 3500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 1600 5550 1700
+Wire Wire Line
+	5550 1700 5650 1700
+Wire Wire Line
+	5650 1700 5650 1800
+Connection ~ 5550 1700
+Wire Wire Line
+	5550 1700 5550 1800
+Wire Wire Line
+	5650 1700 5750 1700
+Wire Wire Line
+	5750 1700 5750 1800
+Connection ~ 5650 1700
+Wire Wire Line
+	5550 1700 5450 1700
+Wire Wire Line
+	5450 1700 5450 1800
+Wire Wire Line
+	5450 1700 5350 1700
+Wire Wire Line
+	5350 1700 5350 1800
+Connection ~ 5450 1700
 $EndSCHEMATC
