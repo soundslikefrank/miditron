@@ -7,7 +7,7 @@ halt_afterwards = true
 
 [default.general]
 # The chip name of the chip to be debugged.
-chip = "STM32F401RETx"
+chip = "STM32F401RBTx"
 
 [default.rtt]
 # Whether or not an RTTUI should be opened after flashing.

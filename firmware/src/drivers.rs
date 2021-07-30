@@ -19,6 +19,8 @@ mod leds;
 mod midi_input;
 mod push_buttons;
 
+use super::clock::Clock;
+
 use self::dac8::Dac8;
 use self::gates::Gates;
 use self::leds::Leds;
@@ -56,6 +58,10 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
     let gpioc = dp.GPIOC.split();
 
     let clocks = set_clocks(rcc, f_cpu, f_systick, &mut syst);
+
+    // Wait a bit for the peripherals to settle in
+    // Clock delay works only after the systick interrupt is enabled
+    Clock::delay(50, f_systick);
 
     // Initialize UART midi input
     let midi_input = MidiInput::new(dp.USART1, gpioa.pa10, clocks);

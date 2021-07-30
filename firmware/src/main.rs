@@ -55,9 +55,6 @@ fn main() -> ! {
 
     free(|cs| Resources::init(cs, d_push_buttons, d_midi_input));
 
-    // Wait a bit for the hardware (eeprom) to settle in
-    Clock::delay(50, f_systick);
-
     // TODO: we will have more setup here
     let mut calibration_data: [u8; 160] = [0; 160];
     d_eeprom.read_into_buffer(0, &mut calibration_data);
