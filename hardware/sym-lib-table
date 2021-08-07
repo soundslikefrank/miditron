@@ -5,4 +5,7 @@
   (lib (name DAC8564IAPW)(type Legacy)(uri ${KIPRJMOD}/models/DAC8564.pretty/DAC8564IAPW.lib)(options "")(descr ""))
   (lib (name OPA4172IPW)(type Legacy)(uri ${KIPRJMOD}/models/OPA4172IPW.pretty/OPA4172IPW.lib)(options "")(descr ""))
   (lib (name LP5012PWR)(type Legacy)(uri ${KIPRJMOD}/models/LP5012PWR.pretty/LP5012PWR.lib)(options "")(descr ""))
+  (lib (name TC002-N11AS1XKT-RGB)(type Legacy)(uri ${KIPRJMOD}/models/TC002-N11AS1XKT-RGB.pretty/TC002-N11AS1XKT-RGB.lib)(options "")(descr ""))
+  (lib (name SN74AHCT244PW)(type Legacy)(uri ${KIPRJMOD}/models/SN74AHCT244PW.pretty/SN74AHCT244PW.lib)(options "")(descr ""))
+  (lib (name ADP150AUJZ-3.3-R7)(type Legacy)(uri ${KIPRJMOD}/models/ADP150AUJZ-3.3-R7.pretty/ADP150AUJZ-3.3-R7.lib)(options "")(descr ""))
 )
