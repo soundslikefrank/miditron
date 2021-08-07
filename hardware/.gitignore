@@ -29,3 +29,7 @@ fp-info-cache
 
 # Model files (not licensed for redistribution)
 /models
+
+# Manufacturing files
+/gerber
+/assembly
