@@ -10,6 +10,8 @@ pub enum Action {
 
 pub mod colors {
     pub const GREEN: (u8, [u8; 3]) = (175, [0, 255, 0]);
+    pub const PINK: (u8, [u8; 3]) = (175, [255, 0, 10]);
+    pub const YELLOW: (u8, [u8; 3]) = (175, [255, 50, 0]);
 }
 
 impl Action {
