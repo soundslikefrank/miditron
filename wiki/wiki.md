@@ -35,6 +35,8 @@
     -> Note length
 
 * CV in
+  - Default CV1 is BPM speed (indicator with colors of LEDs) - One button can be
+    run / stop button
   - Potential modulation destinations:
     -> Arp speed (when there is no midi clock source)
     -> Arp settings

@@ -60,8 +60,6 @@ fn main() -> ! {
     d_eeprom.read_into_buffer(0, &mut calibration_data);
     let mut dispatcher = Dispatcher::new(f_systick, &calibration_data);
 
-    let mut t = false;
-
     loop {
         let inputs = free(|cs| {
             if let Some(res) = Resources::borrow(cs).as_mut() {
@@ -92,9 +90,5 @@ fn main() -> ! {
         if let Some((page, data)) = eeprom {
             d_eeprom.store_page(page, &data);
         }
-
-        // TODO: this is for debugging purposes only - remove
-        d_gates.set(1, t);
-        t = !t;
     }
 }
