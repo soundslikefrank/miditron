@@ -31,5 +31,5 @@ fp-info-cache
 /models
 
 # Manufacturing files
-/gerber
-/assembly
+gerber
+assembly

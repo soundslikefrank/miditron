@@ -1165,6 +1165,8 @@ F 0 "D1" V 9346 5888 50  0000 L CNN
 F 1 "BAT54S" V 9255 5888 50  0000 L CNN
 F 2 "Package_TO_SOT_SMD:SOT-23" H 9375 5925 50  0001 L CNN
 F 3 "https://www.diodes.com/assets/Datasheets/ds11005.pdf" H 9180 5800 50  0001 C CNN
+F 4 "C571351" H 9300 5800 50  0001 C CNN "LCSC Part #"
+F 5 "C571351" H 9300 5800 50  0001 C CNN "LCSC"
 	1    9300 5800
 	1    0    0    -1  
 $EndComp
@@ -1276,10 +1278,10 @@ F 11 "https://www.arrow.com/en/products/sd-50bv/cui-inc" H 3150 5550 50  0001 L 
 	1    0    0    -1  
 $EndComp
 NoConn ~ 2500 6350
-NoConn ~ 2500 6450
+NoConn ~ 3300 6450
 NoConn ~ 2500 6550
-Text HLabel 3300 6350 2    50   Output ~ 0
+Text HLabel 2500 6450 0    50   Output ~ 0
 midi_in+
-Text HLabel 3300 6450 2    50   Output ~ 0
+Text HLabel 3300 6350 2    50   Output ~ 0
 midi_in-
 $EndSCHEMATC
