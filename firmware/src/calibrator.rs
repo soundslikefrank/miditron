@@ -69,7 +69,6 @@ impl CalibrationResult {
         Self { dac4, dac8 }
     }
 
-    // TODO: In next stable release - no IntoIter necessary, remove
     // 4*3*4 + 4*3*8 bytes + 1 magic byte = 145
     pub fn to_bytes(&self) -> Vec<u8, 145> {
         let mut vec: Vec<u8, 145> = Vec::new();
@@ -77,12 +76,12 @@ impl CalibrationResult {
         vec.extend(
             self.dac4
                 .iter()
-                .flat_map(|x| x.iter().flat_map(|x| IntoIter::new(x.to_ne_bytes()))),
+                .flat_map(|x| x.iter().flat_map(|x| x.to_ne_bytes())),
         );
         vec.extend(
             self.dac8
                 .iter()
-                .flat_map(|x| x.iter().flat_map(|x| IntoIter::new(x.to_ne_bytes()))),
+                .flat_map(|x| x.iter().flat_map(|x| x.to_ne_bytes())),
         );
         vec
     }
