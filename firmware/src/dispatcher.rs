@@ -3,7 +3,7 @@ use embedded_midi::MidiMessage as MM;
 use crate::{
     calibrator::{CalibrationResult, Calibrator},
     destinations::{
-        colors::YELLOW, ClockAction, ClockDestination, Command, CvDestination, Destination,
+        colors::YELLOW, ClockDestination, Command, CvDestination, Destination,
         EepromDestination, GateDestination, LedAction, LedDestination, ModDestination,
     },
     drivers::ButtonState,
@@ -104,7 +104,10 @@ impl Dispatcher {
     fn handle_midi_message(&mut self, midi_msg: Option<MM>, now: u32) {
         if let Some(midi_msg) = midi_msg {
             match midi_msg {
-                MM::TimingClock => self.clocks.set(ClockAction::High, now),
+                MM::TimingClock => self.clocks.tick(now),
+                MM::Start => self.clocks.run(),
+                MM::Stop => self.clocks.stop(),
+                MM::Continue => self.clocks.resume(),
                 MM::NoteOn(channel, note, velocity) => {
                     self.leds.set(LedAction::Flash(0, YELLOW), now);
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
