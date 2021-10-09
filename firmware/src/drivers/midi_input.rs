@@ -46,7 +46,6 @@ impl MidiInput {
         self.stream.enqueue(val).ok();
     }
 
-    // TODO: not sure if this is good here
     pub fn read(&mut self) -> Option<MidiMessage> {
         if self.stream.is_empty() {
             return None;

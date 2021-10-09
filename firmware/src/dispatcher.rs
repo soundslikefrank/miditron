@@ -3,8 +3,8 @@ use embedded_midi::MidiMessage as MM;
 use crate::{
     calibrator::{CalibrationResult, Calibrator},
     destinations::{
-        colors::YELLOW, Command, CvDestination, Destination, EepromDestination, GateDestination,
-        LedAction, LedDestination, ModDestination,
+        colors::YELLOW, ClockAction, ClockDestination, Command, CvDestination, Destination,
+        EepromDestination, GateDestination, LedAction, LedDestination, ModDestination,
     },
     drivers::ButtonState,
     layout::Layout,
@@ -19,6 +19,7 @@ enum State {
 
 pub struct Dispatcher {
     calibrator: Calibrator,
+    clocks: ClockDestination,
     eeprom: EepromDestination,
     layout: Layout,
     leds: LedDestination,
@@ -34,11 +35,12 @@ impl Dispatcher {
 
         Self {
             calibrator: Calibrator::new(),
+            clocks: ClockDestination::new(f_refresh),
+            cvs: CvDestination::new(dac4_result),
+            gates: GateDestination::new(),
             eeprom: EepromDestination::new(f_refresh),
             layout: Layout::new(),
             leds: LedDestination::new(f_refresh),
-            cvs: CvDestination::new(dac4_result),
-            gates: GateDestination::new(),
             mods: ModDestination::new(dac8_result),
             state: State::Default,
         }
@@ -53,6 +55,7 @@ impl Dispatcher {
         Option<Command<f32, 8>>,
         Option<Command<(u8, [u8; 3]), 4>>,
         Option<(usize, [u8; 32])>,
+        Option<Command<bool, 4>>,
     ) {
         if let Some((button_states, midi_msg, now)) = inputs {
             match self.state {
@@ -82,9 +85,10 @@ impl Dispatcher {
                 self.mods.next(),
                 self.leds.next(now),
                 self.eeprom.next(now),
+                self.clocks.next(now),
             );
         }
-        (None, None, None, None, None)
+        (None, None, None, None, None, None)
     }
 
     fn handle_button_presses(&mut self, button_states: [ButtonState; 4], _now: u32) {
@@ -100,6 +104,7 @@ impl Dispatcher {
     fn handle_midi_message(&mut self, midi_msg: Option<MM>, now: u32) {
         if let Some(midi_msg) = midi_msg {
             match midi_msg {
+                MM::TimingClock => self.clocks.set(ClockAction::High, now),
                 MM::NoteOn(channel, note, velocity) => {
                     self.leds.set(LedAction::Flash(0, YELLOW), now);
                     if let Some(chan) = self.layout.get_channel(channel.into()) {

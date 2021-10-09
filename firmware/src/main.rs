@@ -48,7 +48,7 @@ fn main() -> ! {
         d_push_buttons,
         mut d_dac4,
         mut d_dac8,
-        mut d_gates,
+        mut d_digital_outs,
         mut d_leds,
         mut d_eeprom,
     ) = drivers::setup(f_cpu, f_systick);
@@ -72,14 +72,18 @@ fn main() -> ! {
             None
         });
 
-        let (cvs, gates, mods, leds, eeprom) = dispatcher.process(inputs);
+        let (cvs, gates, mods, leds, eeprom, clocks) = dispatcher.process(inputs);
 
         if let Some(cvs) = cvs {
             cvs.for_each(|(i, &v)| d_dac4.set_voltage(i as u8, v));
         }
         // FIXME: delay the gate a bit
         if let Some(gates) = gates {
-            gates.for_each(|(i, &v)| d_gates.set(i, v));
+            gates.for_each(|(i, &v)| d_digital_outs.set(i, v));
+        }
+        if let Some(clocks) = clocks {
+            // FIXME: NOT COOL (use enum?)
+            clocks.for_each(|(i, &v)| d_digital_outs.set(4 + i, v));
         }
         if let Some(mods) = mods {
             mods.for_each(|(i, &v)| d_dac8.set_voltage(i as u8, v));

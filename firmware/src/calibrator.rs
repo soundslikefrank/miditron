@@ -1,8 +1,8 @@
-use core::{array::IntoIter, convert::TryInto};
+use core::convert::TryInto;
 use heapless::Vec;
 
 use crate::{
-    destinations::{CvDestination, colors, LedAction, LedDestination, ModDestination},
+    destinations::{colors, CvDestination, LedAction, LedDestination, ModDestination},
     drivers::ButtonState as B,
     utils::math::quad_reg,
 };

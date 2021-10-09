@@ -1,3 +1,4 @@
+mod clock_dest;
 mod cv_dest;
 mod eeprom_dest;
 mod gate_dest;
@@ -5,12 +6,12 @@ mod led_dest;
 mod mod_dest;
 
 pub use {
+    clock_dest::{Action as ClockAction, ClockDestination},
     cv_dest::CvDestination,
     eeprom_dest::EepromDestination,
     gate_dest::GateDestination,
-    led_dest::LedDestination,
-    // TODO: make functions for this I guess
-    led_dest::{colors, Action as LedAction},
+    // TODO: make functions for actions
+    led_dest::{colors, Action as LedAction, LedDestination},
     mod_dest::ModDestination,
 };
 

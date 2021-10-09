@@ -6,15 +6,11 @@ use hal::{
     rcc::{Clocks, Rcc},
     stm32,
 };
-use stm32f4xx_hal::gpio::{
-    gpiob::{PB12, PB13, PB14, PB15},
-    Output, PushPull,
-};
 
 mod dac4;
 mod dac8;
+mod digital_outs;
 mod eeprom;
-mod gates;
 mod leds;
 mod midi_input;
 mod push_buttons;
@@ -22,7 +18,7 @@ mod push_buttons;
 use super::clock::Clock;
 
 use self::dac8::Dac8;
-use self::gates::Gates;
+use self::digital_outs::DigitalOuts;
 use self::leds::Leds;
 use self::{dac4::Dac4, eeprom::Eeprom};
 
@@ -34,13 +30,7 @@ type Drivers = (
     PushButtons,
     Dac4,
     Dac8,
-    // TODO: this is a bit weird, can we make it better?
-    Gates<
-        PB12<Output<PushPull>>,
-        PB13<Output<PushPull>>,
-        PB14<Output<PushPull>>,
-        PB15<Output<PushPull>>,
-    >,
+    DigitalOuts,
     Leds,
     Eeprom,
 );
@@ -67,6 +57,7 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
     let midi_input = MidiInput::new(dp.USART1, gpioa.pa10, clocks);
 
     // Initialize push buttons input
+    // FIXME: use same technique as for digital_outs!
     let push_buttons = PushButtons::new(
         gpioc.pc0.into_pull_up_input(),
         gpioc.pc1.into_pull_up_input(),
@@ -83,11 +74,8 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
 
     let eeprom = Eeprom::new(dp.I2C1, gpiob.pb6, gpiob.pb7, clocks);
 
-    let gates = Gates::new(
-        gpiob.pb12.into_push_pull_output(),
-        gpiob.pb13.into_push_pull_output(),
-        gpiob.pb14.into_push_pull_output(),
-        gpiob.pb15.into_push_pull_output(),
+    let digital_outs = DigitalOuts::new(
+        gpiob.pb12, gpiob.pb13, gpiob.pb14, gpiob.pb15, gpioc.pc4, gpioc.pc5, gpiob.pb0, gpiob.pb1,
     );
 
     // Initialize LEDs
@@ -95,7 +83,15 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
     leds.reset();
     leds.enable();
 
-    return (midi_input, push_buttons, dac4, dac8, gates, leds, eeprom);
+    return (
+        midi_input,
+        push_buttons,
+        dac4,
+        dac8,
+        digital_outs,
+        leds,
+        eeprom,
+    );
 }
 
 fn set_clocks(rcc: Rcc, f_cpu: u32, f_systick: u32, syst: &mut SYST) -> Clocks {
