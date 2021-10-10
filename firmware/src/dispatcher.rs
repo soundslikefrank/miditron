@@ -3,8 +3,8 @@ use embedded_midi::MidiMessage as MM;
 use crate::{
     calibrator::{CalibrationResult, Calibrator},
     destinations::{
-        colors::YELLOW, ClockDestination, Command, CvDestination, Destination,
-        EepromDestination, GateDestination, LedAction, LedDestination, ModDestination,
+        colors, ClockDestination, Command, CvDestination, Destination, EepromDestination,
+        GateDestination, LedAction, LedDestination, ModDestination,
     },
     drivers::ButtonState,
     layout::Layout,
@@ -91,12 +91,16 @@ impl Dispatcher {
         (None, None, None, None, None, None)
     }
 
-    fn handle_button_presses(&mut self, button_states: [ButtonState; 4], _now: u32) {
+    fn handle_button_presses(&mut self, button_states: [ButtonState; 4], now: u32) {
         match button_states {
             [ButtonState::Idle, ButtonState::Idle, ButtonState::Idle, ButtonState::Idle] => {}
             [ButtonState::LongPress, _, _, ButtonState::LongPress] => {
                 self.state = State::Calibration;
             }
+            [ButtonState::Press, _, _, _] => self.leds.set(LedAction::Flash(0, colors::PINK), now),
+            [_, ButtonState::Press, _, _] => self.leds.set(LedAction::Flash(1, colors::PINK), now),
+            [_, _, ButtonState::Press, _] => self.leds.set(LedAction::Flash(2, colors::PINK), now),
+            [_, _, _, ButtonState::Press] => self.leds.set(LedAction::Flash(3, colors::PINK), now),
             _ => {}
         }
     }
@@ -109,7 +113,7 @@ impl Dispatcher {
                 MM::Stop => self.clocks.stop(),
                 MM::Continue => self.clocks.resume(),
                 MM::NoteOn(channel, note, velocity) => {
-                    self.leds.set(LedAction::Flash(0, YELLOW), now);
+                    self.leds.set(LedAction::Flash(0, colors::YELLOW), now);
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
                         self.cvs.set_from_note(chan, note.into());
                         self.gates.set(chan, true);

@@ -7,10 +7,13 @@ use crate::{
     utils::math::quad_reg,
 };
 
-const DAC4_VOLTAGES: [f32; 14] = [
+const DAC4_V_COUNT: usize = 14;
+const DAC8_V_COUNT: usize = 11;
+const DAC4_VOLTAGES: [f32; DAC4_V_COUNT] = [
     -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
 ];
-const DAC8_VOLTAGES: [f32; 11] = [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0];
+const DAC8_VOLTAGES: [f32; DAC8_V_COUNT] =
+    [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0];
 const MAGIC_CALIBRATION_FLAG: u8 = 42;
 
 pub type Dac4Result = [[f32; 3]; 4];
@@ -30,7 +33,10 @@ pub struct CalibrationResult {
 }
 
 impl CalibrationResult {
-    fn from_points(dac4_points: [[f32; 14]; 4], dac8_points: [[f32; 11]; 8]) -> Self {
+    fn from_points(
+        dac4_points: [[f32; DAC4_V_COUNT]; 4],
+        dac8_points: [[f32; DAC8_V_COUNT]; 8],
+    ) -> Self {
         let mut dac4 = [[0.0; 3]; 4];
         let mut dac8 = [[0.0; 3]; 8];
         for (i, chan) in dac4_points.iter().enumerate() {
@@ -92,8 +98,8 @@ impl CalibrationResult {
 }
 
 pub struct Calibrator {
-    dac4_data: [[f32; 14]; 4],
-    dac8_data: [[f32; 11]; 8],
+    dac4_data: [[f32; DAC4_V_COUNT]; 4],
+    dac8_data: [[f32; DAC8_V_COUNT]; 8],
     target: Target,
     indices: (usize, usize),
 }
@@ -101,8 +107,8 @@ pub struct Calibrator {
 impl Calibrator {
     pub fn new() -> Self {
         Self {
-            dac4_data: [[0.0; 14]; 4],
-            dac8_data: [[0.0; 11]; 8],
+            dac4_data: [[0.0; DAC4_V_COUNT]; 4],
+            dac8_data: [[0.0; DAC8_V_COUNT]; 8],
             target: Target::Start,
             indices: (0, 0),
         }
@@ -132,21 +138,21 @@ impl Calibrator {
                 self.advance(leds, now);
                 self.calibrate(0.0, cvs, mods);
             }
-            [_, _, _, B::Press] => {
-                let (_, big_step) = self.get_step_size();
-                self.calibrate(big_step, cvs, mods);
-            }
             [B::Press, _, _, _] => {
                 let (_, big_step) = self.get_step_size();
                 self.calibrate(-big_step, cvs, mods);
+            }
+            [_, B::Press, _, _] => {
+                let (small_step, _) = self.get_step_size();
+                self.calibrate(-small_step, cvs, mods);
             }
             [_, _, B::Press, _] => {
                 let (small_step, _) = self.get_step_size();
                 self.calibrate(small_step, cvs, mods);
             }
-            [_, B::Press, _, _] => {
-                let (small_step, _) = self.get_step_size();
-                self.calibrate(-small_step, cvs, mods);
+            [_, _, _, B::Press] => {
+                let (_, big_step) = self.get_step_size();
+                self.calibrate(big_step, cvs, mods);
             }
             _ => {}
         }
@@ -187,44 +193,43 @@ impl Calibrator {
         let (chan, v) = self.indices;
         match self.target {
             Target::Start => {
-                leds.set(LedAction::BlinkOneFast(true, 0, colors::GREEN), now);
+                leds.set(LedAction::BlinkOneFast(true, 0, colors::RED), now);
                 self.target = Target::Dac4;
             }
             Target::Dac4 => {
-                if v == 13 {
-                    // TODO: this is just for the first channel of Dac4
-                    // Remove the following code
-                    self.target = Target::Dac8;
-                    self.indices = (0, 0);
-                    // And uncomment this
-                    /* if chan == 3 {
+                if v == DAC4_V_COUNT - 1 {
+                    if chan == 3 {
                         self.target = Target::Dac8;
                         self.indices = (0, 0);
+                        leds.set(LedAction::BlinkOneFast(true, 2, colors::RED), now);
                     } else {
-                        leds.set(led::Action::BlinkOneFast(true, chan + 1, led::GREEN), now);
+                        leds.set(
+                            LedAction::BlinkOneFast(true, 0, colors::COLOR_ARRAY[chan + 1]),
+                            now,
+                        );
                         self.indices = (chan + 1, 0);
-                    } */
+                    }
                 } else {
                     self.indices = (chan, v + 1);
                 }
             }
             Target::Dac8 => {
-                if v == 10 {
-                    // TODO: this is just for the first channel of Dac8
-                    // Remove the following code
-                    self.target = Target::End;
-                    leds.set(LedAction::Stop, now);
-                    // And uncomment this
-                    /* if chan == 7 {
+                if v == DAC8_V_COUNT - 1 {
+                    if chan == 7 {
                         self.target = Target::End;
-                        leds.set(led::Action::Stop, now);
+                        leds.set(LedAction::Stop, now);
                     } else {
+                        let next_chan = chan + 1;
+                        self.indices = (next_chan, 0);
                         leds.set(
-                            led::Action::BlinkOneFast(true, (chan + 1) % 4, led::GREEN),
+                            LedAction::BlinkOneFast(
+                                true,
+                                2 + next_chan % 2,
+                                colors::COLOR_ARRAY[next_chan / 2],
+                            ),
                             now,
                         );
-                        self.indices = (chan + 1, 0);
-                    } */
+                    }
                 } else {
                     self.indices = (chan, v + 1);
                 }
