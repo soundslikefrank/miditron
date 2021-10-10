@@ -2,7 +2,7 @@
 
 ## Hardware
 
-- [ ] Build dac8 amp circuit for one output
+- [ ] Switch LEDs b+c and push buttons b+c
 
 ## Programming
 

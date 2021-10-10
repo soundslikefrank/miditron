@@ -60,8 +60,8 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
     // FIXME: use same technique as for digital_outs!
     let push_buttons = PushButtons::new(
         gpioc.pc0.into_pull_up_input(),
-        gpioc.pc1.into_pull_up_input(),
         gpioc.pc2.into_pull_up_input(),
+        gpioc.pc1.into_pull_up_input(),
         gpioc.pc3.into_pull_up_input(),
         f_systick as u16,
     );

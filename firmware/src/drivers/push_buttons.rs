@@ -5,8 +5,9 @@ use stm32f4xx_hal::gpio::{
 };
 
 type PinA = PC0<Input<PullUp>>;
-type PinB = PC1<Input<PullUp>>;
-type PinC = PC2<Input<PullUp>>;
+// TODO: On the first version of the control PCB the 2 center buttons are swapped
+type PinB = PC2<Input<PullUp>>;
+type PinC = PC1<Input<PullUp>>;
 type PinD = PC3<Input<PullUp>>;
 
 const B_IDLE: [ButtonState; 4] = [ButtonState::Idle; 4];

@@ -46,9 +46,15 @@ impl Leds {
         self.i2c.write(self.address, &[0x17, 0xff]).ok();
     }
 
-    pub fn set(&mut self, channel: u8, (brightness, [r, g, b]): (u8, [u8; 3])) {
-        let bright_addr = 0x7 + channel as u8;
-        let color_addr = 0xb + (channel as u8) * 3;
+    pub fn set(&mut self, mut channel: u8, (brightness, [r, g, b]): (u8, [u8; 3])) {
+        // TODO: on the first version of the PCB the center LEDs are swapped
+        if channel == 1 {
+            channel = 2;
+        } else if channel == 2 {
+            channel = 1;
+        }
+        let bright_addr = 0x7 + channel;
+        let color_addr = 0xb + channel * 3;
         self.i2c
             .write(self.address, &[bright_addr, brightness])
             .ok();
