@@ -3,7 +3,7 @@
 
 use cortex_m::interrupt::free;
 use hal::{pac, stm32::interrupt};
-use rt::ExceptionFrame;
+use rt::{exception, ExceptionFrame};
 
 use crate::clock::Clock;
 use crate::resources::Resources;
@@ -16,8 +16,8 @@ fn USART1() {
         let sr = unsafe { (*pac::USART1::ptr()).sr.read() };
         if sr.rxne().bit_is_set() {
             if let Some(res) = Resources::borrow(cs).as_mut() {
-                res.midi_input
-                    .push(unsafe { (*pac::USART1::ptr()).dr.read().bits() as u8 });
+                let val = unsafe { (*pac::USART1::ptr()).dr.read().dr().bits() as u8 };
+                res.midi_input.push(val);
             }
         } else {
             // Check for errors
@@ -29,7 +29,7 @@ fn USART1() {
             {
                 // Clear all error flags (just read DR register)
                 // RM: This bit is set by hardware when a de-synchronization, excessive noise or a break character is detected. It is cleared by a software sequence (an read to the USART_SR register followed by a read to the USART_DR register).
-                unsafe { (*pac::USART1::ptr()).dr.read().bits() as u8 };
+                unsafe { (*pac::USART1::ptr()).dr.read().bits() };
             }
         }
     });
@@ -46,6 +46,6 @@ fn SysTick() {
 }
 
 #[exception]
-fn HardFault(ef: &ExceptionFrame) -> ! {
+unsafe fn HardFault(ef: &ExceptionFrame) -> ! {
     panic!("{:#?}", ef);
 }

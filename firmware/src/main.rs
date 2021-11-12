@@ -4,7 +4,7 @@
 #![no_std]
 #![deny(unsafe_code)]
 
-#[macro_use(entry, exception)]
+#[macro_use(entry)]
 extern crate cortex_m_rt as rt;
 extern crate cortex_m_semihosting as sh;
 extern crate panic_semihosting;

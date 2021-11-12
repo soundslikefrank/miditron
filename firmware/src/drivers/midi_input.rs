@@ -5,14 +5,12 @@ use hal::{
     pac::USART1,
     prelude::*,
     rcc::Clocks,
-    serial::{config::Config, Event, NoTx, Serial},
+    serial::{config::Config, Serial},
     stm32::interrupt,
 };
 use heapless::spsc::Queue;
+use stm32f4xx_hal::serial::Rx;
 
-/// An informative description of this driver
-///
-/// Intterrupts: USART1
 pub struct MidiInput {
     stream: Queue<u8, 128>,
     parser: MidiParser,
@@ -20,29 +18,29 @@ pub struct MidiInput {
 
 impl MidiInput {
     pub fn new(usart: USART1, rx_pin: PA10<Input<Floating>>, clocks: Clocks) -> Self {
-        let rx = rx_pin.into_alternate_af7();
-
-        if let Ok(mut serial) = Serial::usart1(
+        let mut rx: Rx<USART1, u8> = Serial::rx(
             usart,
-            (NoTx, rx),
+            rx_pin.into_alternate(),
             Config::default().baudrate(31_250.bps()),
             clocks,
-        ) {
-            // Set the rxneie interrupt bit
-            serial.listen(Event::Rxne);
+        )
+        .unwrap();
 
-            // Enable interrupt
-            unsafe {
-                NVIC::unmask(interrupt::USART1);
-            }
+        // Set the rxneie interrupt bit
+        rx.listen();
+
+        // Enable interrupt
+        unsafe {
+            NVIC::unmask(interrupt::USART1);
         }
+
         Self {
             parser: MidiParser::new(),
             stream: Queue::new(),
         }
     }
 
-    pub fn push(&mut self, val: u8) -> () {
+    pub fn push(&mut self, val: u8) {
         self.stream.enqueue(val).ok();
     }
 

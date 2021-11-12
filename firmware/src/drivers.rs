@@ -51,7 +51,7 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
 
     // TODO: this is temporary, it kind of seems to work as an initial delay
     // Wait a bit for the peripherals to settle in
-    let mut delay = hal::delay::Delay::new(syst, clocks);
+    let mut delay = hal::delay::Delay::tim5(dp.TIM5, &clocks);
     delay.delay_ms(500_u32);
 
     // Initialize UART midi input

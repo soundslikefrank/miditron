@@ -20,27 +20,27 @@ impl Dac8 {
         clocks: Clocks,
     ) -> Self {
         let scl = scl_pin
-            .into_alternate_af4()
+            .into_alternate()
             .internal_pull_up(true)
             .set_open_drain();
         let sda = sda_pin
-            .into_alternate_af4()
+            .into_alternate()
             .internal_pull_up(true)
             .set_open_drain();
 
-        let i2c = I2c::new(i2c_port, (scl, sda), 400.khz().into(), clocks);
+        let i2c = I2c::new(i2c_port, (scl, sda), 400.khz(), clocks);
 
         Self {
             dac: DAC5578::new(i2c, dac5578::Address::PinLow),
         }
     }
 
-    pub fn set_raw(&mut self, channel: Channel, value: u8) -> () {
+    pub fn set_raw(&mut self, channel: Channel, value: u8) {
         // Is there any use in error handling here?
         self.dac.write(channel, value).ok();
     }
 
-    pub fn set_voltage(&mut self, channel: u8, voltage: f32) -> () {
+    pub fn set_voltage(&mut self, channel: u8, voltage: f32) {
         // TODO: include calibration data somehow
         // Use calibration data in dac initialization (new())
         // x1 = -5.2

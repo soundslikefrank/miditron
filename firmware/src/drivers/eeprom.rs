@@ -22,15 +22,15 @@ impl Eeprom {
         clocks: Clocks,
     ) -> Self {
         let scl = scl_pin
-            .into_alternate_af4()
+            .into_alternate()
             .internal_pull_up(true)
             .set_open_drain();
         let sda = sda_pin
-            .into_alternate_af4()
+            .into_alternate()
             .internal_pull_up(true)
             .set_open_drain();
 
-        let i2c = I2c::new(i2c_port, (scl, sda), 400.khz().into(), clocks);
+        let i2c = I2c::new(i2c_port, (scl, sda), 400.khz(), clocks);
 
         Self {
             i2c,
