@@ -11,6 +11,14 @@ use crate::{
 };
 
 type Inputs = ([ButtonState; 4], Option<MM>, u32);
+type Outputs = (
+    Option<Command<f32, 4>>,
+    Option<Command<bool, 4>>,
+    Option<Command<f32, 8>>,
+    Option<Command<(u8, [u8; 3]), 4>>,
+    Option<(usize, [u8; 32])>,
+    Option<Command<bool, 4>>,
+);
 
 enum State {
     Calibration,
@@ -46,17 +54,7 @@ impl Dispatcher {
         }
     }
 
-    pub fn process(
-        &mut self,
-        inputs: Option<Inputs>,
-    ) -> (
-        Option<Command<f32, 4>>,
-        Option<Command<bool, 4>>,
-        Option<Command<f32, 8>>,
-        Option<Command<(u8, [u8; 3]), 4>>,
-        Option<(usize, [u8; 32])>,
-        Option<Command<bool, 4>>,
-    ) {
+    pub fn process(&mut self, inputs: Option<Inputs>) -> Outputs {
         if let Some((button_states, midi_msg, now)) = inputs {
             match self.state {
                 State::Calibration => {

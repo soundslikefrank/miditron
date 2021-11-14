@@ -12,15 +12,6 @@ impl Clock {
     pub fn tick() {
         CLOCK.fetch_add(1, Ordering::Relaxed);
     }
-
-    pub fn delay(ms: u32, f_refresh: u32) {
-        let start = Self::get();
-        loop {
-            if Self::get() - start >= ms * f_refresh / 1000 {
-                break;
-            }
-        }
-    }
 }
 
 pub struct Counter {

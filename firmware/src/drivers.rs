@@ -15,8 +15,6 @@ mod leds;
 mod midi_input;
 mod push_buttons;
 
-use super::clock::Clock;
-
 use self::dac8::Dac8;
 use self::digital_outs::DigitalOuts;
 use self::leds::Leds;
@@ -49,9 +47,10 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
 
     let clocks = set_clocks(rcc, f_cpu, f_systick, &mut syst);
 
+    // TODO: this is temporary, it kind of seems to work as an initial delay
     // Wait a bit for the peripherals to settle in
-    // Clock delay works only after the systick interrupt is enabled
-    Clock::delay(50, f_systick);
+    let mut delay = hal::delay::Delay::tim5(dp.TIM5, &clocks);
+    delay.delay_ms(500_u32);
 
     // Initialize UART midi input
     let midi_input = MidiInput::new(dp.USART1, gpioa.pa10, clocks);
@@ -83,7 +82,18 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
     leds.reset();
     leds.enable();
 
-    return (
+    // Play some initialization sequence (also functions as a delay)
+    leds.set(0, (50, [255, 255, 255]));
+    delay.delay_ms(500_u32);
+    for _ in 0..4 {
+        for led in 0..4 {
+            leds.set(led, (50, [255, 255, 255]));
+            delay.delay_ms(100_u32);
+            leds.set(led, (0, [0; 3]));
+        }
+    }
+
+    (
         midi_input,
         push_buttons,
         dac4,
@@ -91,7 +101,7 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
         digital_outs,
         leds,
         eeprom,
-    );
+    )
 }
 
 fn set_clocks(rcc: Rcc, f_cpu: u32, f_systick: u32, syst: &mut SYST) -> Clocks {
