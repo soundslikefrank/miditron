@@ -27,9 +27,6 @@ fp-info-cache
 *.xml
 *.csv
 
-# Model files (not licensed for redistribution)
-/models
-
 # Manufacturing files
 gerber
 assembly
