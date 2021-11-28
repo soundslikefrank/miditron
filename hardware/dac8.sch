@@ -14,99 +14,50 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L DAC5578SPWR:DAC5578SPWR IC4
-U 1 1 60A5C8AD
-P 1800 6250
-F 0 "IC4" H 2650 6515 50  0000 C CNN
-F 1 "DAC5578SPWR" H 2650 6424 50  0000 C CNN
-F 2 "SOP65P640X120-16N" H 3350 6350 50  0001 L CNN
-F 3 "http://www.ti.com/lit/gpn/DAC5578" H 3350 6250 50  0001 L CNN
-F 4 "8-bit, Octal Channel, Ultra-Low Glitch, Voltage Output, 2-Wire Interface DAC" H 3350 6150 50  0001 L CNN "Description"
-F 5 "" H 3350 6050 50  0001 L CNN "Height"
-F 6 "Texas Instruments" H 3350 5950 50  0001 L CNN "Manufacturer_Name"
-F 7 "DAC5578SPWR" H 3350 5850 50  0001 L CNN "Manufacturer_Part_Number"
-F 8 "595-DAC5578SPWR" H 3350 5750 50  0001 L CNN "Mouser Part Number"
-F 9 "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/DAC5578SPWR?qs=EuM%2FBx4ov4S16BMU6rn1hg%3D%3D" H 3350 5650 50  0001 L CNN "Mouser Price/Stock"
-F 10 "DAC5578SPWR" H 3350 5550 50  0001 L CNN "Arrow Part Number"
-F 11 "https://www.arrow.com/en/products/dac5578spwr/texas-instruments" H 3350 5450 50  0001 L CNN "Arrow Price/Stock"
-F 12 "C206048" H 1800 6250 50  0001 C CNN "LCSC Part #"
-F 13 "C206048" H 1800 6250 50  0001 C CNN "LCSC"
-	1    1800 6250
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:+3.3VA #PWR0124
 U 1 1 60A68DBC
-P 1300 6450
-F 0 "#PWR0124" H 1300 6300 50  0001 C CNN
-F 1 "+3.3VA" V 1315 6577 50  0000 L CNN
-F 2 "" H 1300 6450 50  0001 C CNN
-F 3 "" H 1300 6450 50  0001 C CNN
-	1    1300 6450
+P 1400 6400
+F 0 "#PWR0124" H 1400 6250 50  0001 C CNN
+F 1 "+3.3VA" V 1415 6527 50  0000 L CNN
+F 2 "" H 1400 6400 50  0001 C CNN
+F 3 "" H 1400 6400 50  0001 C CNN
+	1    1400 6400
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	1300 6450 1800 6450
-Wire Wire Line
-	1800 6350 1650 6350
-Wire Wire Line
-	1650 6250 1800 6250
-Wire Wire Line
-	1500 6250 1650 6250
-Connection ~ 1650 6250
-Wire Wire Line
-	1650 6350 1650 6250
+	1400 6400 1900 6400
 $Comp
 L power:GND #PWR?
 U 1 1 60A68DC3
-P 1500 6250
+P 1550 6200
 AR Path="/60A48B70/60A68DC3" Ref="#PWR?"  Part="1" 
 AR Path="/60A5BF82/60A68DC3" Ref="#PWR?"  Part="1" 
 AR Path="/61005BD4/60A5BF82/60A68DC3" Ref="#PWR0127"  Part="1" 
-F 0 "#PWR0127" H 1500 6000 50  0001 C CNN
-F 1 "GND" V 1505 6122 50  0000 R CNN
-F 2 "" H 1500 6250 50  0001 C CNN
-F 3 "" H 1500 6250 50  0001 C CNN
-	1    1500 6250
+F 0 "#PWR0127" H 1550 5950 50  0001 C CNN
+F 1 "GND" V 1555 6072 50  0000 R CNN
+F 2 "" H 1550 6200 50  0001 C CNN
+F 3 "" H 1550 6200 50  0001 C CNN
+	1    1550 6200
 	0    1    1    0   
 $EndComp
 $Comp
 L power:GND #PWR?
 U 1 1 60A6D04A
-P 4150 6450
+P 4050 6400
 AR Path="/60A48B70/60A6D04A" Ref="#PWR?"  Part="1" 
 AR Path="/60A5BF82/60A6D04A" Ref="#PWR?"  Part="1" 
 AR Path="/61005BD4/60A5BF82/60A6D04A" Ref="#PWR0138"  Part="1" 
-F 0 "#PWR0138" H 4150 6200 50  0001 C CNN
-F 1 "GND" V 4155 6322 50  0000 R CNN
-F 2 "" H 4150 6450 50  0001 C CNN
-F 3 "" H 4150 6450 50  0001 C CNN
-	1    4150 6450
+F 0 "#PWR0138" H 4050 6150 50  0001 C CNN
+F 1 "GND" V 4055 6272 50  0000 R CNN
+F 2 "" H 4050 6400 50  0001 C CNN
+F 3 "" H 4050 6400 50  0001 C CNN
+	1    4050 6400
 	0    -1   -1   0   
 $EndComp
-$Comp
-L Device:R R25
-U 1 1 60A6F434
-P 3600 7200
-F 0 "R25" H 3530 7154 50  0000 R CNN
-F 1 "10k" H 3530 7245 50  0000 R CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 3530 7200 50  0001 C CNN
-F 3 "~" H 3600 7200 50  0001 C CNN
-F 4 "C25804" H 3600 7200 50  0001 C CNN "LCSC Part #"
-F 5 "C25804" H 3600 7200 50  0001 C CNN "LCSC"
-	1    3600 7200
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	3500 6950 3600 6950
-Wire Wire Line
-	3600 6950 3600 7050
-Text HLabel 3500 6250 2    50   Input ~ 0
+Text HLabel 3400 6200 2    50   Input ~ 0
 dac8_scl
-Text HLabel 3500 6350 2    50   BiDi ~ 0
-dac8_sda
 Wire Wire Line
-	3500 6450 4150 6450
+	3400 6400 4050 6400
 $Comp
 L power:+3.3VA #PWR?
 U 1 1 60BC221F
@@ -143,11 +94,11 @@ AR Path="/60A48B70/60BC2231" Ref="C?"  Part="1"
 AR Path="/60A5BF82/60BC2231" Ref="C?"  Part="1" 
 AR Path="/61005BD4/60A5BF82/60BC2231" Ref="C29"  Part="1" 
 F 0 "C29" H 1315 1296 50  0000 L CNN
-F 1 "4u7" H 1315 1205 50  0000 L CNN
+F 1 "10u" H 1315 1205 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 1238 1100 50  0001 C CNN
 F 3 "~" H 1200 1250 50  0001 C CNN
-F 4 "C19666" H 1200 1250 50  0001 C CNN "LCSC Part #"
-F 5 "C19666" H 1200 1250 50  0001 C CNN "LCSC"
+F 4 "C19702" H 1200 1250 50  0001 C CNN "LCSC Part #"
+F 5 "C19702" H 1200 1250 50  0001 C CNN "LCSC"
 	1    1200 1250
 	1    0    0    -1  
 $EndComp
@@ -313,8 +264,6 @@ Wire Wire Line
 	3900 2600 3500 2600
 Text GLabel 4950 2400 0    50   Input ~ 0
 ref_dac8
-Text GLabel 3500 2600 0    50   Input ~ 0
-v_out_dac8_h
 $Comp
 L Device:R R?
 U 1 1 60BC22B2
@@ -369,8 +318,6 @@ Wire Wire Line
 	3900 4000 3500 4000
 Text GLabel 4950 3800 0    50   Input ~ 0
 ref_dac8
-Text GLabel 3500 4000 0    50   Input ~ 0
-v_out_dac8_f
 $Comp
 L Amplifier_Operational:TL074 U?
 U 5 1 60BC22D9
@@ -577,7 +524,7 @@ Wire Wire Line
 Text GLabel 4950 5250 0    50   Input ~ 0
 ref_dac8
 Text GLabel 3500 5450 0    50   Input ~ 0
-v_out_dac8_d
+v_out_dac8_c
 Text Notes 6300 5250 0    50   ~ 0
 -5.2V to 5.2V
 $Comp
@@ -635,7 +582,7 @@ Wire Wire Line
 Text GLabel 9200 900  0    50   Input ~ 0
 ref_dac8
 Text GLabel 7750 1100 0    50   Input ~ 0
-v_out_dac8_a
+v_out_dac8_e
 $Comp
 L Device:R R?
 U 1 1 60C7C8D3
@@ -691,7 +638,7 @@ Wire Wire Line
 Text GLabel 9200 2300 0    50   Input ~ 0
 ref_dac8
 Text GLabel 7750 2500 0    50   Input ~ 0
-v_out_dac8_g
+v_out_dac8_h
 $Comp
 L Device:R R?
 U 1 1 60C7C8FA
@@ -747,7 +694,7 @@ Wire Wire Line
 Text GLabel 9200 3700 0    50   Input ~ 0
 ref_dac8
 Text GLabel 7750 3900 0    50   Input ~ 0
-v_out_dac8_e
+v_out_dac8_g
 Text Notes 10550 900  0    50   ~ 0
 -5.2V to 5.2V
 Text Notes 10550 2300 0    50   ~ 0
@@ -809,7 +756,7 @@ Wire Wire Line
 Text GLabel 9200 5150 0    50   Input ~ 0
 ref_dac8
 Text GLabel 7750 5350 0    50   Input ~ 0
-v_out_dac8_c
+v_out_dac8_f
 Text Notes 10550 5150 0    50   ~ 0
 -5.2V to 5.2V
 $Comp
@@ -1370,36 +1317,30 @@ Wire Wire Line
 Connection ~ 9850 2400
 Wire Wire Line
 	9850 2400 9800 2400
-Text GLabel 1800 6550 0    50   Input ~ 0
+Text GLabel 1900 6500 0    50   Input ~ 0
 v_out_dac8_a
-Text GLabel 1800 6650 0    50   Input ~ 0
+Text GLabel 1900 6700 0    50   Input ~ 0
 v_out_dac8_c
-Text GLabel 1800 6750 0    50   Input ~ 0
+Text GLabel 3400 6800 2    50   Input ~ 0
 v_out_dac8_e
-Text GLabel 1800 6850 0    50   Input ~ 0
+Text GLabel 3400 6600 2    50   Input ~ 0
 v_out_dac8_g
-Text GLabel 3500 6550 2    50   Input ~ 0
+Text GLabel 1900 6600 0    50   Input ~ 0
 v_out_dac8_b
-Text GLabel 3500 6650 2    50   Input ~ 0
+Text GLabel 1900 6800 0    50   Input ~ 0
 v_out_dac8_d
-Text GLabel 3500 6750 2    50   Input ~ 0
+Text GLabel 3400 6700 2    50   Input ~ 0
 v_out_dac8_f
-Text GLabel 3500 6850 2    50   Input ~ 0
+Text GLabel 3400 6500 2    50   Input ~ 0
 v_out_dac8_h
-Text HLabel 6350 2500 2    50   Output ~ 0
-dac8_out_h
-Text HLabel 6350 3900 2    50   Output ~ 0
-dac8_out_f
 Text HLabel 6350 5350 2    50   Output ~ 0
-dac8_out_d
-Text HLabel 10600 1000 2    50   Output ~ 0
-dac8_out_a
-Text HLabel 10600 2400 2    50   Output ~ 0
-dac8_out_g
-Text HLabel 10600 3800 2    50   Output ~ 0
-dac8_out_e
-Text HLabel 10600 5250 2    50   Output ~ 0
 dac8_out_c
+Text HLabel 10600 1000 2    50   Output ~ 0
+dac8_out_e
+Text HLabel 10600 2400 2    50   Output ~ 0
+dac8_out_h
+Text HLabel 10600 5250 2    50   Output ~ 0
+dac8_out_f
 Text HLabel 1950 900  0    50   Input ~ 0
 v_ref
 Wire Wire Line
@@ -1463,7 +1404,7 @@ v_ref_dac8
 Wire Wire Line
 	2350 900  2350 1050
 Connection ~ 2350 1050
-Text GLabel 1800 6950 0    50   Input ~ 0
+Text GLabel 1900 6900 0    50   Input ~ 0
 v_ref_dac8
 Wire Wire Line
 	1850 2650 1850 2550
@@ -1555,19 +1496,46 @@ F 3 "" H 2450 5150 50  0001 C CNN
 	1    2450 5150
 	-1   0    0    1   
 $EndComp
-Text GLabel 3500 1200 0    50   Input ~ 0
+Text GLabel 3400 6900 2    50   Input ~ 0
+v_ref_dac8
+Text HLabel 6350 3900 2    50   Output ~ 0
+dac8_out_b
+Text GLabel 3500 4000 0    50   Input ~ 0
 v_out_dac8_b
 Text HLabel 6350 1100 2    50   Output ~ 0
-dac8_out_b
+dac8_out_d
+Text GLabel 3500 1200 0    50   Input ~ 0
+v_out_dac8_d
+Text HLabel 6350 2500 2    50   Output ~ 0
+dac8_out_a
+Wire Wire Line
+	1550 6200 1900 6200
+Text HLabel 3400 6300 2    50   Input ~ 0
+dac8_sda
+Text HLabel 1900 6300 0    50   Input ~ 0
+dac8_css
 $Comp
-L power:+3.3VA #PWR0137
-U 1 1 618E7CAA
-P 3600 7350
-F 0 "#PWR0137" H 3600 7200 50  0001 C CNN
-F 1 "+3.3VA" V 3615 7477 50  0000 L CNN
-F 2 "" H 3600 7350 50  0001 C CNN
-F 3 "" H 3600 7350 50  0001 C CNN
-	1    3600 7350
-	-1   0    0    1   
+L AD5328BRUZ:AD5328BRUZ IC4
+U 1 1 61AB2D74
+P 1900 6200
+F 0 "IC4" H 2650 6465 50  0000 C CNN
+F 1 "AD5328BRUZ" H 2650 6374 50  0000 C CNN
+F 2 "SOP65P640X120-16N" H 3250 6300 50  0001 L CNN
+F 3 "http://www.analog.com/static/imported-files/data_sheets/AD5308_5318_5328.pdf" H 3250 6200 50  0001 L CNN
+F 4 "AD5328BRUZ, 12-Bit General Purpose DAC 8-channel 167ksps, SPI, Microwire, 16-Pin TSSOP" H 3250 6100 50  0001 L CNN "Description"
+F 5 "1.2" H 3250 6000 50  0001 L CNN "Height"
+F 6 "Analog Devices" H 3250 5900 50  0001 L CNN "Manufacturer_Name"
+F 7 "AD5328BRUZ" H 3250 5800 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "584-AD5328BRUZ" H 3250 5700 50  0001 L CNN "Mouser Part Number"
+F 9 "https://www.mouser.com/Search/Refine.aspx?Keyword=584-AD5328BRUZ" H 3250 5600 50  0001 L CNN "Mouser Price/Stock"
+F 10 "AD5328BRUZ" H 3250 5500 50  0001 L CNN "Arrow Part Number"
+F 11 "https://www.arrow.com/en/products/ad5328bruz/analog-devices" H 3250 5400 50  0001 L CNN "Arrow Price/Stock"
+F 12 "C29162" H 1900 6200 50  0001 C CNN "LCSC"
+	1    1900 6200
+	1    0    0    -1  
 $EndComp
+Text GLabel 3500 2600 0    50   Input ~ 0
+v_out_dac8_a
+Text HLabel 10600 3800 2    50   Output ~ 0
+dac8_out_g
 $EndSCHEMATC

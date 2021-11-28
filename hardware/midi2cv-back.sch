@@ -30,19 +30,20 @@ $EndSheet
 $Sheet
 S 9100 2850 1200 1600
 U 60A5BF82
-F0 "DAC5578" 50
+F0 "AD5328" 50
 F1 "dac8.sch" 50
-F2 "dac8_scl" B L 9100 3150 50 
-F3 "dac8_sda" B L 9100 3300 50 
-F4 "dac8_out_a" O R 10300 3150 50 
-F5 "dac8_out_b" O R 10300 3300 50 
-F6 "dac8_out_c" O R 10300 3450 50 
-F7 "dac8_out_d" O R 10300 3600 50 
-F8 "dac8_out_e" O R 10300 3750 50 
-F9 "dac8_out_f" O R 10300 3900 50 
-F10 "dac8_out_g" O R 10300 4050 50 
-F11 "dac8_out_h" O R 10300 4200 50 
-F12 "v_ref" I L 9100 3000 50 
+F2 "dac8_out_a" O R 10300 3150 50 
+F3 "dac8_out_b" O R 10300 3300 50 
+F4 "dac8_out_c" O R 10300 3450 50 
+F5 "dac8_out_d" O R 10300 3600 50 
+F6 "dac8_out_e" O R 10300 3750 50 
+F7 "dac8_out_f" O R 10300 3900 50 
+F8 "dac8_out_g" O R 10300 4050 50 
+F9 "dac8_out_h" O R 10300 4200 50 
+F10 "v_ref" I L 9100 3000 50 
+F11 "dac8_css" I L 9100 3450 50 
+F12 "dac8_scl" I L 9100 3150 50 
+F13 "dac8_sda" I L 9100 3300 50 
 $EndSheet
 $Comp
 L power:+3.3V #PWR0101
@@ -95,10 +96,6 @@ spi1_mosi
 Text GLabel 7850 3300 2    50   Output ~ 0
 i2c3_scl
 Text GLabel 6550 5000 0    50   BiDi ~ 0
-i2c3_sda
-Text GLabel 9100 3150 0    50   Input ~ 0
-i2c3_scl
-Text GLabel 9100 3300 0    50   BiDi ~ 0
 i2c3_sda
 Wire Wire Line
 	7350 6000 7450 6000
@@ -1130,69 +1127,69 @@ jtag_swclk
 $Comp
 L Connector_Generic:Conn_02x05_Odd_Even J?
 U 1 1 610DA179
-P 3900 6950
+P 3900 7200
 AR Path="/61005BD4/610D605D/610DA179" Ref="J?"  Part="1" 
 AR Path="/61005BD4/610DA179" Ref="J32"  Part="1" 
-F 0 "J32" H 3950 7367 50  0000 C CNN
-F 1 "Conn_02x05_Odd_Even" H 3950 7276 50  0000 C CNN
-F 2 "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical" H 3900 6950 50  0001 C CNN
-F 3 "~" H 3900 6950 50  0001 C CNN
-	1    3900 6950
+F 0 "J32" H 3950 7617 50  0000 C CNN
+F 1 "Debug" H 3950 7526 50  0000 C CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical" H 3900 7200 50  0001 C CNN
+F 3 "~" H 3900 7200 50  0001 C CNN
+	1    3900 7200
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:+3V3 #PWR?
 U 1 1 610DA184
-P 3700 6750
+P 3700 7000
 AR Path="/5FDE753F/610DA184" Ref="#PWR?"  Part="1" 
 AR Path="/610DA184" Ref="#PWR?"  Part="1" 
 AR Path="/5FEE41D4/610DA184" Ref="#PWR?"  Part="1" 
 AR Path="/61005BD4/610D605D/610DA184" Ref="#PWR?"  Part="1" 
 AR Path="/61005BD4/610DA184" Ref="#PWR088"  Part="1" 
-F 0 "#PWR088" H 3700 6600 50  0001 C CNN
-F 1 "+3V3" V 3715 6878 50  0000 L CNN
-F 2 "" H 3700 6750 50  0001 C CNN
-F 3 "" H 3700 6750 50  0001 C CNN
-	1    3700 6750
+F 0 "#PWR088" H 3700 6850 50  0001 C CNN
+F 1 "+3V3" V 3715 7128 50  0000 L CNN
+F 2 "" H 3700 7000 50  0001 C CNN
+F 3 "" H 3700 7000 50  0001 C CNN
+	1    3700 7000
 	0    -1   -1   0   
 $EndComp
 $Comp
 L power:GND #PWR?
 U 1 1 610DA18A
-P 3550 7150
+P 3550 7400
 AR Path="/610DA18A" Ref="#PWR?"  Part="1" 
 AR Path="/5FEE41D4/610DA18A" Ref="#PWR?"  Part="1" 
 AR Path="/61005BD4/610D605D/610DA18A" Ref="#PWR?"  Part="1" 
 AR Path="/61005BD4/610DA18A" Ref="#PWR087"  Part="1" 
-F 0 "#PWR087" H 3550 6900 50  0001 C CNN
-F 1 "GND" H 3555 6977 50  0000 C CNN
-F 2 "" H 3550 7150 50  0001 C CNN
-F 3 "" H 3550 7150 50  0001 C CNN
-	1    3550 7150
+F 0 "#PWR087" H 3550 7150 50  0001 C CNN
+F 1 "GND" H 3555 7227 50  0000 C CNN
+F 2 "" H 3550 7400 50  0001 C CNN
+F 3 "" H 3550 7400 50  0001 C CNN
+	1    3550 7400
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	3700 7150 3600 7150
+	3700 7400 3600 7400
 Wire Wire Line
-	3700 6950 3600 6950
+	3700 7200 3600 7200
 Wire Wire Line
-	3600 6950 3600 7150
-Connection ~ 3600 7150
+	3600 7200 3600 7400
+Connection ~ 3600 7400
 Wire Wire Line
-	3600 7150 3550 7150
-NoConn ~ 3700 7050
+	3600 7400 3550 7400
+NoConn ~ 3700 7300
 Wire Wire Line
-	3600 6950 3600 6850
+	3600 7200 3600 7100
 Wire Wire Line
-	3600 6850 3700 6850
-Connection ~ 3600 6950
-Text GLabel 4200 6750 2    50   Output ~ 0
+	3600 7100 3700 7100
+Connection ~ 3600 7200
+Text GLabel 4200 7000 2    50   Output ~ 0
 jtag_swdio
-Text GLabel 4200 6850 2    50   Output ~ 0
+Text GLabel 4200 7100 2    50   Output ~ 0
 jtag_swclk
-NoConn ~ 4200 6950
-NoConn ~ 4200 7050
-Text GLabel 4200 7150 2    50   Output ~ 0
+NoConn ~ 4200 7200
+NoConn ~ 4200 7300
+Text GLabel 4200 7400 2    50   Output ~ 0
 jtag_reset
 $Sheet
 S 9100 5750 1200 600 
@@ -1205,8 +1202,6 @@ NoConn ~ 7850 3100
 NoConn ~ 7850 3400
 NoConn ~ 7850 3600
 NoConn ~ 7850 3700
-NoConn ~ 7850 4000
-NoConn ~ 6550 5300
 NoConn ~ 6550 5400
 NoConn ~ 7850 4400
 NoConn ~ 7850 4600
@@ -1219,7 +1214,6 @@ NoConn ~ 6550 4900
 NoConn ~ 6550 4800
 NoConn ~ 6550 4700
 NoConn ~ 6550 5200
-NoConn ~ 6550 5100
 Wire Wire Line
 	9100 2200 8950 2200
 Wire Wire Line
@@ -1417,4 +1411,85 @@ Text GLabel 7850 3500 2    50   Input ~ 0
 midi_in
 Text GLabel 4900 5550 2    50   Output ~ 0
 midi_in
+Text GLabel 7850 4000 2    50   Output ~ 0
+spi3_nss
+Text GLabel 6550 5100 0    50   Output ~ 0
+spi3_sck
+Text GLabel 6550 5300 0    50   Output ~ 0
+spi3_mosi
+Text GLabel 9100 3300 0    50   Input ~ 0
+spi3_mosi
+Text GLabel 9100 3150 0    50   Input ~ 0
+spi3_sck
+Text GLabel 9100 3450 0    50   Input ~ 0
+spi3_nss
+$Comp
+L Connector_Generic:Conn_02x03_Odd_Even J?
+U 1 1 61B40794
+P 5850 7250
+AR Path="/61005BD4/610D605D/61B40794" Ref="J?"  Part="1" 
+AR Path="/61005BD4/61B40794" Ref="J34"  Part="1" 
+F 0 "J34" H 5900 7667 50  0000 C CNN
+F 1 "Expander" H 5900 7576 50  0000 C CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_2x03_P1.27mm_Vertical" H 5850 7250 50  0001 C CNN
+F 3 "~" H 5850 7250 50  0001 C CNN
+	1    5850 7250
+	1    0    0    -1  
+$EndComp
+Text GLabel 5650 7150 0    50   BiDi ~ 0
+i2c3_sda
+Text GLabel 6150 7150 2    50   Input ~ 0
+i2c3_scl
+$Comp
+L power:+3V3 #PWR?
+U 1 1 61B426BB
+P 5650 7350
+AR Path="/5FDE753F/61B426BB" Ref="#PWR?"  Part="1" 
+AR Path="/61B426BB" Ref="#PWR?"  Part="1" 
+AR Path="/5FEE41D4/61B426BB" Ref="#PWR?"  Part="1" 
+AR Path="/61005BD4/610D605D/61B426BB" Ref="#PWR?"  Part="1" 
+AR Path="/61005BD4/61B426BB" Ref="#PWR024"  Part="1" 
+F 0 "#PWR024" H 5650 7200 50  0001 C CNN
+F 1 "+3V3" V 5665 7478 50  0000 L CNN
+F 2 "" H 5650 7350 50  0001 C CNN
+F 3 "" H 5650 7350 50  0001 C CNN
+	1    5650 7350
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 61B43837
+P 6150 7350
+AR Path="/61B43837" Ref="#PWR?"  Part="1" 
+AR Path="/5FEE41D4/61B43837" Ref="#PWR?"  Part="1" 
+AR Path="/61005BD4/610D605D/61B43837" Ref="#PWR?"  Part="1" 
+AR Path="/61005BD4/61B43837" Ref="#PWR026"  Part="1" 
+F 0 "#PWR026" H 6150 7100 50  0001 C CNN
+F 1 "GND" H 6155 7177 50  0000 C CNN
+F 2 "" H 6150 7350 50  0001 C CNN
+F 3 "" H 6150 7350 50  0001 C CNN
+	1    6150 7350
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 5650 7250
+Wire Wire Line
+	6150 7250 6150 7350
+Connection ~ 6150 7350
+$Comp
+L Connector_Generic:Conn_01x03 J35
+U 1 1 61B5D1B3
+P 5000 6400
+F 0 "J35" H 5080 6442 50  0000 L CNN
+F 1 "SPI3 Testpoint" H 5080 6351 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 5000 6400 50  0001 C CNN
+F 3 "~" H 5000 6400 50  0001 C CNN
+	1    5000 6400
+	1    0    0    -1  
+$EndComp
+Text GLabel 4800 6300 0    50   Input ~ 0
+spi3_sck
+Text GLabel 4800 6400 0    50   Input ~ 0
+spi3_mosi
+Text GLabel 4800 6500 0    50   Input ~ 0
+spi3_nss
 $EndSCHEMATC
