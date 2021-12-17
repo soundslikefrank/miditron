@@ -416,9 +416,9 @@ Text GLabel 6900 1650 0    50   Input ~ 0
 cv_in_a_front
 Text GLabel 10700 1900 0    50   Input ~ 0
 dac4_out_a_front
-Text GLabel 10700 1400 0    50   Input ~ 0
+Text GLabel 10700 1500 0    50   Input ~ 0
 dac8_out_a_front
-Text GLabel 10700 1300 0    50   Input ~ 0
+Text GLabel 10700 900  0    50   Input ~ 0
 dac8_out_e_front
 Text GLabel 6900 1950 0    50   Input ~ 0
 jack_detect_front
@@ -435,9 +435,9 @@ F 3 "" H 9250 1750 50  0001 C CNN
 $EndComp
 Text GLabel 10700 1600 0    50   Input ~ 0
 dac4_out_d_front
-Text GLabel 10700 1500 0    50   Input ~ 0
+Text GLabel 10700 1100 0    50   Input ~ 0
 dac8_out_d_front
-Text GLabel 10700 1200 0    50   Input ~ 0
+Text GLabel 10700 1300 0    50   Input ~ 0
 dac8_out_h_front
 Text GLabel 9250 1450 0    50   Input ~ 0
 gate_out_b_front
@@ -593,9 +593,9 @@ F 3 "~" H 9450 1250 50  0001 C CNN
 	1    9450 1250
 	1    0    0    -1  
 $EndComp
-Text GLabel 10700 900  0    50   Input ~ 0
-dac8_out_f_front
 Text GLabel 10700 1000 0    50   Input ~ 0
+dac8_out_f_front
+Text GLabel 10700 1200 0    50   Input ~ 0
 dac8_out_b_front
 Text GLabel 10700 1800 0    50   Input ~ 0
 dac4_out_b_front
@@ -607,29 +607,29 @@ Text GLabel 9250 1550 0    50   Input ~ 0
 gate_out_c_front
 Text GLabel 9250 1350 0    50   Input ~ 0
 gate_out_a_front
-Text GLabel 10700 800  0    50   Input ~ 0
+Text GLabel 10700 1400 0    50   Input ~ 0
 dac8_out_g_front
-Text GLabel 10700 1100 0    50   Input ~ 0
+Text GLabel 10700 800  0    50   Input ~ 0
 dac8_out_c_front
 Text GLabel 10700 1700 0    50   Input ~ 0
 dac4_out_c_front
-Text GLabel 5450 1250 0    50   Input ~ 0
+Text GLabel 5450 1350 0    50   Input ~ 0
 dac8_out_h_back
-Text GLabel 5450 950  0    50   Input ~ 0
-dac8_out_f_back
-Text GLabel 5450 1550 0    50   Input ~ 0
-dac8_out_d_back
 Text GLabel 5450 1050 0    50   Input ~ 0
+dac8_out_f_back
+Text GLabel 5450 1150 0    50   Input ~ 0
+dac8_out_d_back
+Text GLabel 5450 1250 0    50   Input ~ 0
 dac8_out_b_back
 Text GLabel 5450 1850 0    50   Input ~ 0
 dac4_out_b_back
-Text GLabel 5450 850  0    50   Input ~ 0
-dac8_out_g_back
-Text GLabel 5450 1350 0    50   Input ~ 0
-dac8_out_e_back
-Text GLabel 5450 1150 0    50   Input ~ 0
-dac8_out_c_back
 Text GLabel 5450 1450 0    50   Input ~ 0
+dac8_out_g_back
+Text GLabel 5450 950  0    50   Input ~ 0
+dac8_out_e_back
+Text GLabel 5450 850  0    50   Input ~ 0
+dac8_out_c_back
+Text GLabel 5450 1550 0    50   Input ~ 0
 dac8_out_a_back
 Text GLabel 5450 1750 0    50   Input ~ 0
 dac4_out_c_back
