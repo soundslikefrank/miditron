@@ -1,4 +1,4 @@
-use embedded_midi::MidiMessage as MM;
+use embedded_midi::{Control, MidiMessage as MM};
 
 use crate::{
     calibrator::{CalibrationResult, Calibrator},
@@ -111,17 +111,25 @@ impl Dispatcher {
                 MM::Stop => self.clocks.stop(),
                 MM::Continue => self.clocks.resume(),
                 MM::NoteOn(channel, note, velocity) => {
-                    self.leds.set(LedAction::Flash(0, colors::YELLOW), now);
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
+                        self.leds
+                            .set(LedAction::Flash(chan, colors::COLOR_ARRAY[chan]), now);
                         self.cvs.set_from_note(chan, note.into());
                         self.gates.set(chan, true);
-                        self.mods.set_from_velocity(chan, velocity.into());
+                        // self.mods.set_from_val7(chan, velocity.into());
                     }
                 }
                 MM::NoteOff(channel, _n, _v) => {
                     if let Some(chan) = self.layout.get_channel(channel.into()) {
                         self.gates.set(chan, false);
-                        self.mods.set(chan, 0.0);
+                        // TODO: this is another "layout?"
+                        // self.mods.set(chan, 0.0);
+                    }
+                }
+                MM::ControlChange(channel, cc, val) => {
+                    if let Some(chan) = self.layout.get_mod_from_cc(channel.into(), cc.into())
+                    {
+                        self.mods.set_from_val7(chan, val.into());
                     }
                 }
                 _ => {}

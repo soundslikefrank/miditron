@@ -15,6 +15,8 @@ mod leds;
 mod midi_input;
 mod push_buttons;
 
+use crate::destinations::colors;
+
 use self::dac8::Dac8;
 use self::digital_outs::DigitalOuts;
 use self::leds::Leds;
@@ -49,7 +51,7 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
 
     // TODO: this is temporary, it kind of seems to work as an initial delay
     // Wait a bit for the peripherals to settle in
-    let mut delay = hal::delay::Delay::tim5(dp.TIM5, &clocks);
+    let mut delay = hal::delay::Delay::new(syst, clocks);
     delay.delay_ms(500_u32);
 
     // Initialize UART midi input
@@ -83,11 +85,11 @@ pub fn setup(f_cpu: u32, f_systick: u32) -> Drivers {
     leds.enable();
 
     // Play some initialization sequence (also functions as a delay)
-    leds.set(0, (50, [255, 255, 255]));
+    leds.set(0, colors::WHITE);
     delay.delay_ms(500_u32);
     for _ in 0..4 {
         for led in 0..4 {
-            leds.set(led, (50, [255, 255, 255]));
+            leds.set(led, colors::WHITE);
             delay.delay_ms(100_u32);
             leds.set(led, (0, [0; 3]));
         }

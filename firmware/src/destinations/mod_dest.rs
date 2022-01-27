@@ -1,7 +1,7 @@
 use super::Destination;
 use crate::calibrator::Dac8Result;
 
-const VOLTS_PER_VELOCITY: f32 = 5_f32 / 127_f32;
+const VOLTS_PER_VAL7: f32 = 5_f32 / 127_f32;
 
 pub struct ModDestination {
     data: [Option<f32>; 8],
@@ -32,8 +32,10 @@ impl ModDestination {
         self.set(chan, volts + offset);
     }
 
-    pub fn set_from_velocity(&mut self, chan: usize, velo: u8) {
-        let volts = velo as f32 * VOLTS_PER_VELOCITY;
+    // TODO: Use a Value7 type?
+    // TODO: this assumes only 0 to 5V. Also offet a -5 to 5V mapping
+    pub fn set_from_val7(&mut self, chan: usize, val: u8) {
+        let volts = val as f32 * VOLTS_PER_VAL7;
         self.set_volts(chan, volts);
     }
 }

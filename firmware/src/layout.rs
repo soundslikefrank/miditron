@@ -17,4 +17,10 @@ impl Layout {
         // FIXME: this is just for testing purposes
         Some(midi_channel as usize)
     }
+    pub fn get_mod_from_cc(&self, channel: u8, cc: u8) -> Option<usize> {
+        if let Some(chan) = self.get_channel(channel) {
+            return Some(chan * 2 + cc as usize);
+        }
+        None
+    }
 }

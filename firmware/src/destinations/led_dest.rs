@@ -11,12 +11,14 @@ pub enum Action {
 pub mod colors {
     use super::Data;
 
-    pub const RED: Data = (175, [255, 0, 0]);
-    pub const YELLOW: Data = (175, [255, 50, 0]);
-    pub const GREEN: Data = (175, [0, 255, 0]);
-    pub const PINK: Data = (175, [255, 0, 10]);
+    pub const RED: Data = (100, [255, 0, 0]);
+    pub const YELLOW: Data = (100, [255, 50, 0]);
+    pub const GREEN: Data = (100, [0, 255, 0]);
+    pub const PINK: Data = (100, [255, 0, 10]);
 
     pub const COLOR_ARRAY: [Data; 4] = [RED, YELLOW, GREEN, PINK];
+
+    pub const WHITE: Data = (50, [255, 175, 175]);
 }
 
 
