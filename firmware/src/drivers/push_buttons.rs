@@ -59,7 +59,7 @@ impl PushButtons {
             self.buffer = None;
             return buf;
         }
-        return B_IDLE;
+        B_IDLE
     }
 
     pub fn poll(&mut self) {
@@ -74,9 +74,9 @@ impl PushButtons {
             // Button was let go of
             if state == 0 {
                 if self.counter >= self.long_press_threshold {
-                    return self.set_pressed(ButtonState::LongPress);
+                    self.set_pressed(ButtonState::LongPress)
                 } else if self.counter >= self.press_threshold {
-                    return self.set_pressed(ButtonState::Press);
+                    self.set_pressed(ButtonState::Press)
                 }
             }
         }
